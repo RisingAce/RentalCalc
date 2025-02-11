@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rent Affordability Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rent Affordability Calculator</h1>
+    <label for="rent">Monthly Rent ($):</label>
+    <input type="number" id="rent" placeholder="Enter your monthly rent" />
+    <button onclick="calculateIncome()">Calculate Minimum Annual Income</button>
+    <p class="result" id="result"></p>
+  </div>
+
+  <script>
+    function calculateIncome() {
+      const rentInput = document.getElementById('rent');
+      const resultDisplay = document.getElementById('result');
+      const rent = parseFloat(rentInput.value);
+
+      if (isNaN(rent) || rent < 0) {
+        resultDisplay.textContent = "Please enter a valid positive number for rent.";
+        return;
+      }
+
+      // Multiply monthly rent by 30 to determine the minimum required annual income.
+      const income = rent * 30;
+      resultDisplay.textContent = "Minimum Required Annual Income: $" + income.toFixed(2);
+    }
+  </script>
+</body>
+</html>
