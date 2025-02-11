@@ -3,25 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rent Affordability Calculator</title>
+  <title>Enhanced Rent Affordability Calculator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
+      background: #f0f8ff;
       margin: 0;
       padding: 20px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
     }
     .container {
       background: #fff;
       padding: 20px;
+      margin-bottom: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
       width: 100%;
+      max-width: 500px;
     }
     h1 {
       text-align: center;
@@ -37,56 +37,170 @@
       margin-bottom: 15px;
       font-size: 1em;
       box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
     button {
       background-color: #007BFF;
       color: #fff;
       border: none;
       cursor: pointer;
-      border-radius: 4px;
     }
     button:hover {
       background-color: #0056b3;
     }
     .result {
-      font-size: 1.2em;
+      font-size: 1.1em;
       font-weight: bold;
       text-align: center;
-      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Rent Affordability Calculator</h1>
+    <h1>Enhanced Rent Affordability Calculator</h1>
     <label for="rent">Monthly Rent (£):</label>
     <input type="number" id="rent" placeholder="Enter your monthly rent" />
+
+    <label for="income">Your Annual Income (£):</label>
+    <input type="number" id="income" placeholder="Enter your annual income (optional)" />
 
     <button onclick="calculateIncome()">Calculate</button>
 
     <p class="result" id="tenantResult"></p>
     <p class="result" id="guarantorResult"></p>
+    <p class="result" id="affordabilityResult"></p>
   </div>
+
+  <canvas id="affordabilityChart" width="500" height="250"></canvas>
 
   <script>
     function calculateIncome() {
       const rentInput = document.getElementById('rent');
+      const incomeInput = document.getElementById('income');
       const tenantResult = document.getElementById('tenantResult');
       const guarantorResult = document.getElementById('guarantorResult');
+      const affordabilityResult = document.getElementById('affordabilityResult');
       const rent = parseFloat(rentInput.value);
+      const userIncome = parseFloat(incomeInput.value);
+
+      // Clear any previous graph
+      const canvas = document.getElementById('affordabilityChart');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (isNaN(rent) || rent < 0) {
         tenantResult.textContent = "Please enter a valid positive number for rent.";
         guarantorResult.textContent = "";
+        affordabilityResult.textContent = "";
         return;
       }
 
-      // Multiply rent by 30 for tenant income & 36 for guarantor income
-      const tenantIncome = rent * 30;
-      const guarantorIncome = rent * 36;
+      // Calculate required incomes
+      const tenantIncomeRequired = rent * 30;
+      const guarantorIncomeRequired = rent * 36;
+      
+      tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncomeRequired.toLocaleString();
+      guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncomeRequired.toLocaleString();
 
-      tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncome.toLocaleString();
-      guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncome.toLocaleString();
+      // Determine affordability status if user income is provided
+      if (!isNaN(userIncome) && userIncome >= 0) {
+        if (userIncome >= tenantIncomeRequired) {
+          affordabilityResult.textContent = "Your income is AFFORDABLE for this rent.";
+          affordabilityResult.style.color = "green";
+        } else {
+          affordabilityResult.textContent = "Your income is UNAFFORDABLE for this rent.";
+          affordabilityResult.style.color = "red";
+        }
+      } else {
+        affordabilityResult.textContent = "";
+      }
+
+      // Draw the dynamic graph
+      drawGraph(tenantIncomeRequired, userIncome);
+    }
+
+    function drawGraph(threshold, userIncome) {
+      const canvas = document.getElementById('affordabilityChart');
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Margins for graph area
+      const marginLeft = 50;
+      const marginRight = 20;
+      const marginTop = 30;
+      const marginBottom = 40;
+      const graphWidth = width - marginLeft - marginRight;
+      const graphHeight = height - marginTop - marginBottom;
+      
+      // Determine the maximum value on the x-axis (with padding)
+      let maxValue = threshold;
+      if (!isNaN(userIncome) && userIncome > maxValue) {
+        maxValue = userIncome;
+      }
+      maxValue *= 1.2;
+      
+      // Draw horizontal x-axis
+      ctx.beginPath();
+      ctx.moveTo(marginLeft, height - marginBottom);
+      ctx.lineTo(width - marginRight, height - marginBottom);
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Draw tick marks and labels on x-axis
+      const numTicks = 5;
+      ctx.fillStyle = "#333";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      for (let i = 0; i <= numTicks; i++) {
+        const xPos = marginLeft + (i / numTicks) * graphWidth;
+        const tickValue = (i / numTicks) * maxValue;
+        ctx.beginPath();
+        ctx.moveTo(xPos, height - marginBottom);
+        ctx.lineTo(xPos, height - marginBottom + 5);
+        ctx.stroke();
+        ctx.fillText("£" + Math.round(tickValue).toLocaleString(), xPos, height - marginBottom + 8);
+      }
+
+      // Helper function: Convert a value to its x-coordinate on the graph
+      function valueToX(value) {
+        return marginLeft + (value / maxValue) * graphWidth;
+      }
+
+      // Draw the threshold line (tenant income requirement)
+      const thresholdX = valueToX(threshold);
+      ctx.beginPath();
+      ctx.moveTo(thresholdX, marginTop);
+      ctx.lineTo(thresholdX, height - marginBottom);
+      ctx.strokeStyle = "red";
+      ctx.setLineDash([5, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "red";
+      ctx.textAlign = "center";
+      ctx.fillText("Threshold: £" + threshold.toLocaleString(), thresholdX, marginTop - 20);
+
+      // Draw the user income marker if provided
+      if (!isNaN(userIncome) && userIncome >= 0) {
+        const userX = valueToX(userIncome);
+        ctx.beginPath();
+        ctx.arc(userX, height - marginBottom, 8, 0, Math.PI * 2);
+        ctx.fillStyle = userIncome >= threshold ? "green" : "red";
+        ctx.fill();
+        ctx.strokeStyle = "#333";
+        ctx.stroke();
+        ctx.fillStyle = "#333";
+        ctx.textAlign = "center";
+        ctx.fillText("Your Income: £" + userIncome.toLocaleString(), userX, height - marginBottom + 15);
+      }
     }
   </script>
 </body>
