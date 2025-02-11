@@ -27,8 +27,9 @@
       text-align: center;
     }
     label {
-      margin-bottom: 8px;
       font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
     }
     input, button {
       width: 100%;
@@ -51,6 +52,7 @@
       font-size: 1.2em;
       font-weight: bold;
       text-align: center;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -59,24 +61,32 @@
     <h1>Rent Affordability Calculator</h1>
     <label for="rent">Monthly Rent (£):</label>
     <input type="number" id="rent" placeholder="Enter your monthly rent" />
-    <button onclick="calculateIncome()">Calculate Minimum Annual Income</button>
-    <p class="result" id="result"></p>
+
+    <button onclick="calculateIncome()">Calculate</button>
+
+    <p class="result" id="tenantResult"></p>
+    <p class="result" id="guarantorResult"></p>
   </div>
 
   <script>
     function calculateIncome() {
       const rentInput = document.getElementById('rent');
-      const resultDisplay = document.getElementById('result');
+      const tenantResult = document.getElementById('tenantResult');
+      const guarantorResult = document.getElementById('guarantorResult');
       const rent = parseFloat(rentInput.value);
 
       if (isNaN(rent) || rent < 0) {
-        resultDisplay.textContent = "Please enter a valid positive number for rent.";
+        tenantResult.textContent = "Please enter a valid positive number for rent.";
+        guarantorResult.textContent = "";
         return;
       }
 
-      // Multiply monthly rent by 30 to determine the minimum required annual income.
-      const income = rent * 30;
-      resultDisplay.textContent = "Minimum Required Annual Income: $" + income.toFixed(2);
+      // Multiply rent by 30 for tenant income & 36 for guarantor income
+      const tenantIncome = rent * 30;
+      const guarantorIncome = rent * 36;
+
+      tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncome.toLocaleString();
+      guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncome.toLocaleString();
     }
   </script>
 </body>
