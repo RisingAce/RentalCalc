@@ -4,41 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Enhanced Rent Affordability Calculator</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
   <style>
+    /* Base styling */
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f8ff;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      transition: background 0.3s, color 0.3s;
+    }
+    /* Light and Dark themes */
+    body.light {
+      background: #f0f8ff;
+      color: #333;
+    }
+    body.dark {
+      background: #2c2c2c;
+      color: #ddd;
     }
     .container {
       background: #fff;
       padding: 20px;
+      margin: auto;
       margin-bottom: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 100%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 500px;
+    }
+    body.dark .container {
+      background: #3c3c3c;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
     h1 {
       text-align: center;
+      margin-bottom: 10px;
     }
     label {
-      font-weight: bold;
+      font-weight: 500;
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
     input, button {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
       font-size: 1em;
-      box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 4px;
+      box-sizing: border-box;
+      transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+    body.dark input, body.dark button {
+      background: #555;
+      color: #eee;
+      border-color: #777;
     }
     button {
       background-color: #007BFF;
@@ -51,25 +71,47 @@
     }
     .result {
       font-size: 1.1em;
-      font-weight: bold;
+      font-weight: 500;
       text-align: center;
       margin-bottom: 10px;
     }
+    /* Canvas styling */
     canvas {
       border: 1px solid #ccc;
       border-radius: 4px;
       background: #fff;
+      display: block;
+      margin: 0 auto;
+    }
+    body.dark canvas {
+      background: #444;
+      border-color: #666;
+    }
+    /* Toggle Button */
+    #toggleTheme {
+      margin: auto;
+      display: block;
+      max-width: 200px;
+      margin-bottom: 20px;
+      padding: 8px 12px;
+      font-size: 0.9em;
     }
   </style>
 </head>
-<body>
+<body class="light">
+  <!-- Dark/Light mode toggle -->
+  <button id="toggleTheme">Switch to Dark Mode</button>
   <div class="container">
-    <h1>Enhanced Rent Affordability Calculator</h1>
+    <h1>Rent Affordability Calculator</h1>
+    
     <label for="rent">Monthly Rent (£):</label>
-    <input type="number" id="rent" placeholder="Enter your monthly rent" />
+    <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter your monthly rent" />
 
     <label for="income">Your Annual Income (£):</label>
-    <input type="number" id="income" placeholder="Enter your annual income (optional)" />
+    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income (optional)" />
+
+    <label for="incomeSlider">Adjust Income (Slider, rounds to nearest £100):</label>
+    <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0">
 
     <button onclick="calculateIncome()">Calculate</button>
 
@@ -81,31 +123,60 @@
   <canvas id="affordabilityChart" width="500" height="250"></canvas>
 
   <script>
+    // Toggle dark/light mode
+    const toggleThemeBtn = document.getElementById('toggleTheme');
+    toggleThemeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      document.body.classList.toggle('light');
+      toggleThemeBtn.textContent = document.body.classList.contains('dark')
+        ? "Switch to Light Mode"
+        : "Switch to Dark Mode";
+    });
+
+    // Real-time calculation on rent input change
+    document.getElementById('rent').addEventListener('input', calculateIncome);
+
+    // Income text input and slider synchronization
+    const incomeText = document.getElementById('income');
+    const incomeSlider = document.getElementById('incomeSlider');
+
+    // When the text input changes, update the slider (rounded to the nearest £100)
+    incomeText.addEventListener('input', function() {
+      const value = parseFloat(this.value);
+      if (!isNaN(value)) {
+        incomeSlider.value = Math.round(value / 100) * 100;
+      }
+      calculateIncome();
+    });
+
+    // When the slider changes, round its value to the nearest 100, update the text input, and recalc
+    incomeSlider.addEventListener('input', function() {
+      let sliderValue = Math.round(parseFloat(this.value) / 100) * 100;
+      this.value = sliderValue;
+      incomeText.value = sliderValue;
+      calculateIncome();
+    });
+
     function calculateIncome() {
       const rentInput = document.getElementById('rent');
-      const incomeInput = document.getElementById('income');
       const tenantResult = document.getElementById('tenantResult');
       const guarantorResult = document.getElementById('guarantorResult');
       const affordabilityResult = document.getElementById('affordabilityResult');
       const rent = parseFloat(rentInput.value);
-      const userIncome = parseFloat(incomeInput.value);
+      const userIncome = parseFloat(incomeText.value);
 
-      // Clear any previous graph
-      const canvas = document.getElementById('affordabilityChart');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+      // Validate rent input
       if (isNaN(rent) || rent < 0) {
         tenantResult.textContent = "Please enter a valid positive number for rent.";
         guarantorResult.textContent = "";
         affordabilityResult.textContent = "";
+        clearCanvas();
         return;
       }
 
       // Calculate required incomes
       const tenantIncomeRequired = rent * 30;
       const guarantorIncomeRequired = rent * 36;
-      
       tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncomeRequired.toLocaleString();
       guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncomeRequired.toLocaleString();
 
@@ -122,32 +193,47 @@
         affordabilityResult.textContent = "";
       }
 
-      // Draw the dynamic graph
-      drawGraph(tenantIncomeRequired, userIncome);
+      // Draw the graph with an animated marker if user income is provided
+      if (!isNaN(userIncome) && userIncome >= 0) {
+        animateMarker(tenantIncomeRequired, userIncome);
+      } else {
+        drawGraph(tenantIncomeRequired, userIncome, 8);
+      }
     }
 
-    function drawGraph(threshold, userIncome) {
+    // Clear the canvas
+    function clearCanvas() {
+      const canvas = document.getElementById('affordabilityChart');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Draw the graph (with optional marker radius for animation)
+    function drawGraph(threshold, userIncome, markerRadius = 8) {
       const canvas = document.getElementById('affordabilityChart');
       const ctx = canvas.getContext('2d');
       const width = canvas.width;
       const height = canvas.height;
       
-      // Margins for graph area
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Graph margins
       const marginLeft = 50;
       const marginRight = 20;
       const marginTop = 30;
       const marginBottom = 40;
       const graphWidth = width - marginLeft - marginRight;
       const graphHeight = height - marginTop - marginBottom;
-      
-      // Determine the maximum value on the x-axis (with padding)
+
+      // Determine maximum value for the x-axis
       let maxValue = threshold;
       if (!isNaN(userIncome) && userIncome > maxValue) {
         maxValue = userIncome;
       }
       maxValue *= 1.2;
-      
-      // Draw horizontal x-axis
+
+      // Draw x-axis
       ctx.beginPath();
       ctx.moveTo(marginLeft, height - marginBottom);
       ctx.lineTo(width - marginRight, height - marginBottom);
@@ -155,7 +241,7 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Draw tick marks and labels on x-axis
+      // Draw tick marks and labels on the x-axis
       const numTicks = 5;
       ctx.fillStyle = "#333";
       ctx.textAlign = "center";
@@ -170,7 +256,7 @@
         ctx.fillText("£" + Math.round(tickValue).toLocaleString(), xPos, height - marginBottom + 8);
       }
 
-      // Helper function: Convert a value to its x-coordinate on the graph
+      // Helper to convert a value to x-coordinate
       function valueToX(value) {
         return marginLeft + (value / maxValue) * graphWidth;
       }
@@ -188,11 +274,11 @@
       ctx.textAlign = "center";
       ctx.fillText("Threshold: £" + threshold.toLocaleString(), thresholdX, marginTop - 20);
 
-      // Draw the user income marker if provided
+      // Draw the animated user income marker if provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         const userX = valueToX(userIncome);
         ctx.beginPath();
-        ctx.arc(userX, height - marginBottom, 8, 0, Math.PI * 2);
+        ctx.arc(userX, height - marginBottom, markerRadius, 0, Math.PI * 2);
         ctx.fillStyle = userIncome >= threshold ? "green" : "red";
         ctx.fill();
         ctx.strokeStyle = "#333";
@@ -201,6 +287,24 @@
         ctx.textAlign = "center";
         ctx.fillText("Your Income: £" + userIncome.toLocaleString(), userX, height - marginBottom + 15);
       }
+    }
+
+    // Animate the user marker from radius 0 to 8 over 500ms
+    function animateMarker(threshold, userIncome) {
+      const duration = 500; // animation duration in ms
+      const finalRadius = 8;
+      let startTime = null;
+
+      function animationStep(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let progress = timestamp - startTime;
+        let currentRadius = Math.min(finalRadius, (progress / duration) * finalRadius);
+        drawGraph(threshold, userIncome, currentRadius);
+        if (currentRadius < finalRadius) {
+          requestAnimationFrame(animationStep);
+        }
+      }
+      requestAnimationFrame(animationStep);
     }
   </script>
 </body>
