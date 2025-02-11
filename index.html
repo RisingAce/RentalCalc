@@ -96,33 +96,91 @@
       padding: 8px 12px;
       font-size: 0.9em;
     }
+    /* Secret Button */
+    #secretButton {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      opacity: 0.5;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    #secretButton:hover {
+      opacity: 0.8;
+    }
+    /* Secret Game Overlay */
+    #gameContainer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+    }
+    #gameContent {
+      position: relative;
+      margin: auto;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body class="light">
   <!-- Dark/Light mode toggle -->
   <button id="toggleTheme">Switch to Dark Mode</button>
+  
   <div class="container">
     <h1>Rent Affordability Calculator</h1>
     
     <label for="rent">Monthly Rent (£):</label>
     <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter your monthly rent" />
-
-    <label for="income">Annual Income (£):</label>
-    <input type="number" id="income" aria-label="Annual Income in pounds" placeholder="Enter the Annual income (optional)" />
-
+    
+    <label for="income">Your Annual Income (£):</label>
+    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income (optional)" />
+    
     <label for="incomeSlider">Adjust Income (Slider, rounds to nearest £100):</label>
     <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0">
-
+    
     <button onclick="calculateIncome()">Calculate</button>
-
+    
     <p class="result" id="tenantResult"></p>
     <p class="result" id="guarantorResult"></p>
     <p class="result" id="affordabilityResult"></p>
   </div>
-
+  
   <canvas id="affordabilityChart" width="500" height="250"></canvas>
-
+  
+  <!-- Secret Game Button -->
+  <button id="secretButton">?</button>
+  
+  <!-- Secret Game Overlay -->
+  <div id="gameContainer">
+    <div id="gameContent">
+      <h2>Secret Game: Click the Circle!</h2>
+      <p>Score: <span id="gameScore">0</span> | Time Left: <span id="gameTimer">10</span>s</p>
+      <canvas id="gameCanvas" width="400" height="300" style="border: 1px solid #333; background: #f9f9f9;"></canvas>
+      <br>
+      <button id="playAgainButton" style="display:none;">Play Again</button>
+      <button id="closeGameButton" style="margin-top: 10px;">Close Game</button>
+    </div>
+  </div>
+  
   <script>
+    // ---------- Rent Affordability Calculator Code ----------
     // Toggle dark/light mode
     const toggleThemeBtn = document.getElementById('toggleTheme');
     toggleThemeBtn.addEventListener('click', () => {
@@ -132,14 +190,14 @@
         ? "Switch to Light Mode"
         : "Switch to Dark Mode";
     });
-
+    
     // Real-time calculation on rent input change
     document.getElementById('rent').addEventListener('input', calculateIncome);
-
+    
     // Income text input and slider synchronization
     const incomeText = document.getElementById('income');
     const incomeSlider = document.getElementById('incomeSlider');
-
+    
     // When the text input changes, update the slider (rounded to the nearest £100)
     incomeText.addEventListener('input', function() {
       const value = parseFloat(this.value);
@@ -148,7 +206,7 @@
       }
       calculateIncome();
     });
-
+    
     // When the slider changes, round its value to the nearest 100, update the text input, and recalc
     incomeSlider.addEventListener('input', function() {
       let sliderValue = Math.round(parseFloat(this.value) / 100) * 100;
@@ -156,7 +214,7 @@
       incomeText.value = sliderValue;
       calculateIncome();
     });
-
+    
     function calculateIncome() {
       const rentInput = document.getElementById('rent');
       const tenantResult = document.getElementById('tenantResult');
@@ -164,7 +222,7 @@
       const affordabilityResult = document.getElementById('affordabilityResult');
       const rent = parseFloat(rentInput.value);
       const userIncome = parseFloat(incomeText.value);
-
+    
       // Validate rent input
       if (isNaN(rent) || rent < 0) {
         tenantResult.textContent = "Please enter a valid positive number for rent.";
@@ -173,13 +231,13 @@
         clearCanvas();
         return;
       }
-
+    
       // Calculate required incomes
       const tenantIncomeRequired = rent * 30;
       const guarantorIncomeRequired = rent * 36;
       tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncomeRequired.toLocaleString();
       guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncomeRequired.toLocaleString();
-
+    
       // Determine affordability status if user income is provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         if (userIncome >= tenantIncomeRequired) {
@@ -192,7 +250,7 @@
       } else {
         affordabilityResult.textContent = "";
       }
-
+    
       // Draw the graph with an animated marker if user income is provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         animateMarker(tenantIncomeRequired, userIncome);
@@ -200,14 +258,14 @@
         drawGraph(tenantIncomeRequired, userIncome, 8);
       }
     }
-
+    
     // Clear the canvas
     function clearCanvas() {
       const canvas = document.getElementById('affordabilityChart');
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-
+    
     // Draw the graph (with optional marker radius for animation)
     function drawGraph(threshold, userIncome, markerRadius = 8) {
       const canvas = document.getElementById('affordabilityChart');
@@ -217,22 +275,22 @@
       
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
-
+    
       // Graph margins
       const marginLeft = 50;
       const marginRight = 20;
       const marginTop = 30;
       const marginBottom = 40;
       const graphWidth = width - marginLeft - marginRight;
-      const graphHeight = height - marginTop - marginBottom;
-
+    
       // Determine maximum value for the x-axis
       let maxValue = threshold;
-      if (!isNaN(userIncome) && userIncome > maxValue) {
-        maxValue = userIncome;
+      const userIncomeVal = !isNaN(userIncome) ? userIncome : 0;
+      if (userIncomeVal > maxValue) {
+        maxValue = userIncomeVal;
       }
       maxValue *= 1.2;
-
+    
       // Draw x-axis
       ctx.beginPath();
       ctx.moveTo(marginLeft, height - marginBottom);
@@ -240,7 +298,7 @@
       ctx.strokeStyle = "#333";
       ctx.lineWidth = 2;
       ctx.stroke();
-
+    
       // Draw tick marks and labels on the x-axis
       const numTicks = 5;
       ctx.fillStyle = "#333";
@@ -255,12 +313,12 @@
         ctx.stroke();
         ctx.fillText("£" + Math.round(tickValue).toLocaleString(), xPos, height - marginBottom + 8);
       }
-
+    
       // Helper to convert a value to x-coordinate
       function valueToX(value) {
         return marginLeft + (value / maxValue) * graphWidth;
       }
-
+    
       // Draw the threshold line (tenant income requirement)
       const thresholdX = valueToX(threshold);
       ctx.beginPath();
@@ -273,7 +331,7 @@
       ctx.fillStyle = "red";
       ctx.textAlign = "center";
       ctx.fillText("Threshold: £" + threshold.toLocaleString(), thresholdX, marginTop - 20);
-
+    
       // Draw the animated user income marker if provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         const userX = valueToX(userIncome);
@@ -288,13 +346,13 @@
         ctx.fillText("Your Income: £" + userIncome.toLocaleString(), userX, height - marginBottom + 15);
       }
     }
-
+    
     // Animate the user marker from radius 0 to 8 over 500ms
     function animateMarker(threshold, userIncome) {
       const duration = 500; // animation duration in ms
       const finalRadius = 8;
       let startTime = null;
-
+    
       function animationStep(timestamp) {
         if (!startTime) startTime = timestamp;
         let progress = timestamp - startTime;
@@ -306,6 +364,81 @@
       }
       requestAnimationFrame(animationStep);
     }
+    
+    // ---------- Secret Game Code ----------
+    const secretButton = document.getElementById('secretButton');
+    const gameContainer = document.getElementById('gameContainer');
+    const closeGameButton = document.getElementById('closeGameButton');
+    const playAgainButton = document.getElementById('playAgainButton');
+    const gameScoreSpan = document.getElementById('gameScore');
+    const gameTimerSpan = document.getElementById('gameTimer');
+    const gameCanvas = document.getElementById('gameCanvas');
+    const gameCtx = gameCanvas.getContext('2d');
+    
+    let gameScore = 0;
+    let gameTime = 10; // seconds
+    let gameInterval;
+    let circleX, circleY;
+    const circleRadius = 30;
+    
+    function startGame() {
+      gameScore = 0;
+      gameTime = 10;
+      gameScoreSpan.textContent = gameScore;
+      gameTimerSpan.textContent = gameTime;
+      playAgainButton.style.display = "none";
+      gameCanvas.addEventListener('click', canvasClickHandler);
+      drawCircle();
+      gameInterval = setInterval(() => {
+        gameTime--;
+        gameTimerSpan.textContent = gameTime;
+        if (gameTime <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+    
+    function endGame() {
+      clearInterval(gameInterval);
+      gameCanvas.removeEventListener('click', canvasClickHandler);
+      playAgainButton.style.display = "inline-block";
+    }
+    
+    function canvasClickHandler(event) {
+      const rect = gameCanvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      const dist = Math.sqrt((mouseX - circleX) ** 2 + (mouseY - circleY) ** 2);
+      if (dist <= circleRadius) {
+        gameScore++;
+        gameScoreSpan.textContent = gameScore;
+        drawCircle();
+      }
+    }
+    
+    function drawCircle() {
+      gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+      circleX = Math.random() * (gameCanvas.width - 2 * circleRadius) + circleRadius;
+      circleY = Math.random() * (gameCanvas.height - 2 * circleRadius) + circleRadius;
+      gameCtx.beginPath();
+      gameCtx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+      gameCtx.fillStyle = "#007BFF";
+      gameCtx.fill();
+    }
+    
+    secretButton.addEventListener('click', () => {
+      gameContainer.style.display = "block";
+      startGame();
+    });
+    
+    closeGameButton.addEventListener('click', () => {
+      gameContainer.style.display = "none";
+      clearInterval(gameInterval);
+    });
+    
+    playAgainButton.addEventListener('click', () => {
+      startGame();
+    });
   </script>
 </body>
 </html>
