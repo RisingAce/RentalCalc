@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Multi-Calculator (Rent + Utility)</title>
+  <title>Multi-Calculator (Rent + Bills)</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
 
@@ -186,7 +186,28 @@
     /* Hide containers by default */
     #rentAffordabilityTab,
     #rentalIncreaseTab,
-    #utilityBillTab {
+    #billsTab {
+      display: none;
+    }
+
+    /* Sub-tab navigation for Bills Calculator */
+    .sub-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .sub-tabs button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 4px;
+    }
+    .sub-tabs button.active {
+      background-color: #0056b3;
+      color: #fff;
+    }
+    #energySubTab, #councilSubTab {
       display: none;
     }
   </style>
@@ -215,8 +236,6 @@
     <p class="result" id="tenantResult"></p>
     <p class="result" id="guarantorResult"></p>
     <p class="result" id="affordabilityResult"></p>
-
-    <!-- Canvas is now inside the Rent Affordability container -->
     <canvas id="affordabilityChart" width="500" height="250"></canvas>
   </div>
 
@@ -238,46 +257,80 @@
     <div id="rentIncreaseResult" class="result" style="display: none;"></div>
   </div>
 
-  <!-- UTILITY BILL TAB -->
-  <div class="calc-container" id="utilityBillTab">
-    <h1>Utility Bill Calculator</h1>
-    <p style="text-align:center;">
-      Estimates monthly & annual costs for Electricity and Gas using Ofgem average usage.
-    </p>
+  <!-- BILLS CALCULATOR TAB -->
+  <div class="calc-container" id="billsTab">
+    <h1>Bills Calculator</h1>
 
-    <!-- Household Size -->
-    <label for="householdSize">Household Size:</label>
-    <select id="householdSize">
-      <option value="1-2">1-2 people</option>
-      <option value="2-3" selected>2-3 people</option>
-      <option value="4-5">4-5 people</option>
-    </select>
-
-    <!-- Region: Southern Scotland (hard-coded for now) -->
-    <label for="region">Region:</label>
-    <select id="region">
-      <option value="southern_scotland" selected>Southern Scotland</option>
-    </select>
-
-    <!-- EPC Rating Toggle & Select -->
-    <div style="margin-bottom: 5px;">
-      <input type="checkbox" id="useEpcToggle" />
-      <label for="useEpcToggle" style="display:inline;">Apply EPC Rating Multiplier?</label>
+    <!-- Sub-Tab Buttons -->
+    <div class="sub-tabs">
+      <button id="subTabEnergy" class="active">Energy Costs</button>
+      <button id="subTabCouncil">Council Tax 2024/25</button>
     </div>
-    <label for="energyRating">EPC Rating (A–G):</label>
-    <select id="energyRating" disabled>
-      <option value="A">A (Most Efficient, 0.8×)</option>
-      <option value="B">B (0.9×)</option>
-      <option value="C" selected>C (1.0×)</option>
-      <option value="D">D (1.1×)</option>
-      <option value="E">E (1.2×)</option>
-      <option value="F">F (1.3×)</option>
-      <option value="G">G (1.4×)</option>
-    </select>
 
-    <button onclick="calculateUtilityBill()">Calculate Utility Costs</button>
-    
-    <p class="result" id="utilityResult"></p>
+    <!-- ENERGY SUB-TAB -->
+    <div id="energySubTab">
+      <p style="text-align:center;">
+        Estimates monthly & annual costs for Electricity and Gas using Ofgem average usage.
+      </p>
+
+      <label for="householdSize">Household Size:</label>
+      <select id="householdSize">
+        <option value="1-2">1-2 people</option>
+        <option value="2-3" selected>2-3 people</option>
+        <option value="4-5">4-5 people</option>
+      </select>
+
+      <label for="region">Region:</label>
+      <select id="region">
+        <option value="southern_scotland" selected>Southern Scotland</option>
+      </select>
+
+      <div style="margin-bottom: 5px;">
+        <input type="checkbox" id="useEpcToggle" />
+        <label for="useEpcToggle" style="display:inline;">Apply EPC Rating Multiplier?</label>
+      </div>
+      <label for="energyRating">EPC Rating (A–G):</label>
+      <select id="energyRating" disabled>
+        <option value="A">A (Most Efficient, 0.8×)</option>
+        <option value="B">B (0.9×)</option>
+        <option value="C" selected>C (1.0×)</option>
+        <option value="D">D (1.1×)</option>
+        <option value="E">E (1.2×)</option>
+        <option value="F">F (1.3×)</option>
+        <option value="G">G (1.4×)</option>
+      </select>
+
+      <!-- Toggle to include Council Tax in the final total -->
+      <div style="margin-bottom: 10px;">
+        <input type="checkbox" id="combineCouncilTaxToggle" />
+        <label for="combineCouncilTaxToggle">Include Council Tax?</label>
+      </div>
+
+      <button onclick="calculateUtilityBill()">Calculate Energy Costs</button>
+      <p class="result" id="utilityResult"></p>
+    </div>
+
+    <!-- COUNCIL TAX SUB-TAB -->
+    <div id="councilSubTab">
+      <p style="text-align:center;">
+        Select your Council Tax Band to see annual charges (2024/25).
+      </p>
+
+      <label for="councilBand">Council Tax Band:</label>
+      <select id="councilBand">
+        <option value="A">Band A</option>
+        <option value="B">Band B</option>
+        <option value="C">Band C</option>
+        <option value="D" selected>Band D</option>
+        <option value="E">Band E</option>
+        <option value="F">Band F</option>
+        <option value="G">Band G</option>
+        <option value="H">Band H</option>
+      </select>
+
+      <button onclick="updateCouncilTax()">Show Council Tax</button>
+      <p class="result" id="councilTaxResult"></p>
+    </div>
   </div>
 
   <!-- SECRET GAME BUTTON -->
@@ -299,7 +352,7 @@
   <div class="bottom-tabs">
     <button id="tabBtnAffordability" class="active">Rent Affordability</button>
     <button id="tabBtnIncrease">Rental Increase</button>
-    <button id="tabBtnUtility">Utility Bills</button>
+    <button id="tabBtnBills">Bills Calculator</button>
   </div>
 
   <script>
@@ -316,11 +369,11 @@
     // ====== TABS ======
     const tabBtnAffordability = document.getElementById('tabBtnAffordability');
     const tabBtnIncrease = document.getElementById('tabBtnIncrease');
-    const tabBtnUtility = document.getElementById('tabBtnUtility');
+    const tabBtnBills = document.getElementById('tabBtnBills');
 
     const rentAffordabilityTab = document.getElementById('rentAffordabilityTab');
     const rentalIncreaseTab = document.getElementById('rentalIncreaseTab');
-    const utilityBillTab = document.getElementById('utilityBillTab');
+    const billsTab = document.getElementById('billsTab');
 
     // Show the "Rent Affordability" tab by default
     rentAffordabilityTab.style.display = 'block';
@@ -328,10 +381,10 @@
     function hideAllTabs() {
       rentAffordabilityTab.style.display = 'none';
       rentalIncreaseTab.style.display = 'none';
-      utilityBillTab.style.display = 'none';
+      billsTab.style.display = 'none';
       tabBtnAffordability.classList.remove('active');
       tabBtnIncrease.classList.remove('active');
-      tabBtnUtility.classList.remove('active');
+      tabBtnBills.classList.remove('active');
     }
 
     tabBtnAffordability.addEventListener('click', () => {
@@ -344,10 +397,38 @@
       rentalIncreaseTab.style.display = 'block';
       tabBtnIncrease.classList.add('active');
     });
-    tabBtnUtility.addEventListener('click', () => {
+    tabBtnBills.addEventListener('click', () => {
       hideAllTabs();
-      utilityBillTab.style.display = 'block';
-      tabBtnUtility.classList.add('active');
+      billsTab.style.display = 'block';
+      tabBtnBills.classList.add('active');
+    });
+
+    // ====== BILLS SUB-TABS ======
+    const subTabEnergy = document.getElementById('subTabEnergy');
+    const subTabCouncil = document.getElementById('subTabCouncil');
+
+    const energySubTab = document.getElementById('energySubTab');
+    const councilSubTab = document.getElementById('councilSubTab');
+
+    // Show "Energy" sub-tab by default
+    energySubTab.style.display = 'block';
+
+    function hideBillsSubTabs() {
+      energySubTab.style.display = 'none';
+      councilSubTab.style.display = 'none';
+      subTabEnergy.classList.remove('active');
+      subTabCouncil.classList.remove('active');
+    }
+
+    subTabEnergy.addEventListener('click', () => {
+      hideBillsSubTabs();
+      energySubTab.style.display = 'block';
+      subTabEnergy.classList.add('active');
+    });
+    subTabCouncil.addEventListener('click', () => {
+      hideBillsSubTabs();
+      councilSubTab.style.display = 'block';
+      subTabCouncil.classList.add('active');
     });
 
     // ====== RENT AFFORDABILITY CALCULATOR ======
@@ -564,7 +645,22 @@
       `;
     }
 
-    // ====== UTILITY BILL CALCULATOR ======
+    // ====== BILLS CALCULATOR (ENERGY + COUNCIL TAX) ======
+    let councilTaxAnnual = 0; // Will store the selected band's total annual cost
+    let energyAnnualCost = 0; // Will store the computed energy cost
+
+    // Council Tax 2024/25 data
+    const councilTaxData = {
+      A: { total: 1329.39 },
+      B: { total: 1550.95 },
+      C: { total: 1772.52 },
+      D: { total: 1994.08 },
+      E: { total: 2569.91 },
+      F: { total: 3141.73 },
+      G: { total: 3745.71 },
+      H: { total: 4639.62 }
+    };
+
     const useEpcToggle = document.getElementById('useEpcToggle');
     const energyRatingSelect = document.getElementById('energyRating');
     useEpcToggle.addEventListener('change', () => {
@@ -572,9 +668,11 @@
       energyRatingSelect.disabled = !useEpcToggle.checked;
     });
 
+    // Called when the user clicks "Calculate Energy Costs"
     function calculateUtilityBill() {
       const householdSize = document.getElementById('householdSize').value; // "1-2", "2-3", "4-5"
       const utilityResult = document.getElementById('utilityResult');
+      const combineCouncilTax = document.getElementById('combineCouncilTaxToggle').checked;
 
       // Hard-coded usage from Ofgem
       let electricityUsage = 0; // kWh/year
@@ -597,8 +695,8 @@
       const gasStanding   = 0.3180;  // £/day
 
       // Annual costs
-      const elecAnnual = electricityUsage * elecUnitRate + (elecStanding * 365);
-      const gasAnnual  = gasUsage * gasUnitRate + (gasStanding * 365);
+      let elecAnnual = electricityUsage * elecUnitRate + (elecStanding * 365);
+      let gasAnnual  = gasUsage * gasUnitRate + (gasStanding * 365);
       let totalAnnual  = elecAnnual + gasAnnual;
 
       // If EPC rating toggle is ON, apply multiplier
@@ -618,13 +716,52 @@
         totalAnnual *= multiplier;
       }
 
-      const totalMonthly = totalAnnual / 12;
+      energyAnnualCost = totalAnnual; // store globally
+
+      let displayAnnual = totalAnnual;
+      let displayMonthly = totalAnnual / 12;
+
+      // If user wants to include council tax
+      let combinedText = "";
+      if (combineCouncilTax) {
+        const combinedAnnual = totalAnnual + councilTaxAnnual;
+        const combinedMonthly = combinedAnnual / 12;
+        combinedText = `
+          <br><strong>Combined with Council Tax:</strong><br>
+          Combined Monthly: £${combinedMonthly.toFixed(2)}<br>
+          Combined Annual: £${combinedAnnual.toFixed(2)}
+        `;
+      }
 
       utilityResult.style.color = "green";
       utilityResult.innerHTML = `
-        <strong>Total cost per month:</strong> £${totalMonthly.toFixed(2)}<br>
-        <strong>Total cost per year:</strong> £${totalAnnual.toFixed(2)}<br><br>
-        <em>The results provided by this calculator are estimations only. Actual figures may vary.</em>
+        <strong>Energy cost per month:</strong> £${displayMonthly.toFixed(2)}<br>
+        <strong>Energy cost per year:</strong> £${displayAnnual.toFixed(2)}<br>
+        ${combinedText}
+        <br><em>The results provided by this calculator are estimations only. Actual figures may vary.</em>
+      `;
+    }
+
+    // Called when user selects a Council Tax band and clicks "Show Council Tax"
+    function updateCouncilTax() {
+      const band = document.getElementById('councilBand').value; // e.g. "A", "B", ...
+      const councilTaxResult = document.getElementById('councilTaxResult');
+
+      // Retrieve the total annual cost for that band
+      if (!councilTaxData[band]) {
+        councilTaxResult.innerHTML = "Invalid band selected.";
+        councilTaxAnnual = 0;
+        return;
+      }
+      councilTaxAnnual = councilTaxData[band].total;
+
+      // Show annual + monthly
+      const monthly = councilTaxAnnual / 12;
+      councilTaxResult.style.color = "green";
+      councilTaxResult.innerHTML = `
+        <strong>Band ${band} Annual:</strong> £${councilTaxAnnual.toFixed(2)}<br>
+        <strong>Monthly (approx):</strong> £${monthly.toFixed(2)}<br>
+        <em>(Water & Sewerage included in total)</em>
       `;
     }
 
@@ -639,7 +776,7 @@
     const gameCtx = gameCanvas.getContext('2d');
 
     let gameScore = 0;
-    let gameTime = 10;
+    let gameTime = 10; // seconds
     let gameInterval;
     let circleX, circleY;
     const circleRadius = 30;
