@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Enhanced Rent Affordability Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Calculator (Rent + Utility)</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+
   <style>
     /* Base styling */
     body {
       font-family: 'Roboto', sans-serif;
       margin: 0;
-      padding: 20px;
+      padding: 0;
       transition: background 0.3s, color 0.3s;
     }
     /* Light and Dark themes */
@@ -23,19 +24,41 @@
       background: #2c2c2c;
       color: #ddd;
     }
-    .container {
+
+    /* Top bar for theme toggle */
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 10px;
+    }
+    #toggleTheme {
+      padding: 8px 12px;
+      font-size: 0.9em;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+    }
+    #toggleTheme:hover {
+      background-color: #0056b3;
+    }
+
+    /* Container for each calculator tab */
+    .calc-container {
       background: #fff;
       padding: 20px;
-      margin: auto;
-      margin-bottom: 20px;
+      margin: 20px auto;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 500px;
+      max-width: 550px;
     }
-    body.dark .container {
+    body.dark .calc-container {
       background: #3c3c3c;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
+
     h1 {
       text-align: center;
       margin-bottom: 10px;
@@ -45,7 +68,7 @@
       display: block;
       margin-bottom: 5px;
     }
-    input, button {
+    input, select, button {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
@@ -55,7 +78,9 @@
       box-sizing: border-box;
       transition: background 0.3s, color 0.3s, border-color 0.3s;
     }
-    body.dark input, body.dark button {
+    body.dark input,
+    body.dark select,
+    body.dark button {
       background: #555;
       color: #eee;
       border-color: #777;
@@ -75,27 +100,20 @@
       text-align: center;
       margin-bottom: 10px;
     }
-    /* Canvas styling */
-    canvas {
+
+    /* Canvas styling (for Rent Affordability) */
+    #affordabilityChart {
       border: 1px solid #ccc;
       border-radius: 4px;
       background: #fff;
       display: block;
-      margin: 0 auto;
+      margin: 0 auto 40px auto;
     }
-    body.dark canvas {
+    body.dark #affordabilityChart {
       background: #444;
       border-color: #666;
     }
-    /* Toggle Button */
-    #toggleTheme {
-      margin: auto;
-      display: block;
-      max-width: 200px;
-      margin-bottom: 20px;
-      padding: 8px 12px;
-      font-size: 0.9em;
-    }
+
     /* Secret Button */
     #secretButton {
       position: fixed;
@@ -138,99 +156,133 @@
       text-align: center;
     }
 
-    /* --- TABS STYLING --- */
-    .tab {
-      overflow: hidden;
-      border-bottom: 1px solid #ccc;
-      margin-bottom: 20px;
+    /* Bottom Tab Navigation */
+    .bottom-tabs {
+      position: static; /* change to fixed if you want them pinned at bottom */
+      bottom: 0;
+      width: 100%;
+      background: #fafafa;
+      border-top: 2px solid #ccc;
+      display: flex;
+      justify-content: center;
+      padding: 10px 0;
     }
-    .tab button {
-      background-color: inherit;
-      float: left;
-      border: none;
-      outline: none;
-      cursor: pointer;
-      padding: 14px 16px;
-      transition: 0.3s;
+    body.dark .bottom-tabs {
+      background: #2c2c2c;
+      border-top: 2px solid #555;
+    }
+    .bottom-tabs button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 12px;
       font-size: 1em;
+      border-radius: 4px;
+      max-width: 180px;
     }
-    .tab button:hover {
-      background-color: #ddd;
+    .bottom-tabs button.active {
+      background-color: #0056b3;
     }
-    .tab button.active {
-      background-color: #ccc;
-    }
-    .tabcontent {
-      display: none; /* Hidden by default; will be shown when active */
+
+    /* Hide containers by default */
+    #rentAffordabilityTab,
+    #rentalIncreaseTab,
+    #utilityBillTab {
+      display: none;
     }
   </style>
 </head>
 <body class="light">
-  <!-- Dark/Light mode toggle -->
-  <button id="toggleTheme">Switch to Dark Mode</button>
-
-  <!-- TAB BUTTONS -->
-  <div class="tab">
-    <button class="tablinks" onclick="openTab(event, 'affordabilityTab')" id="defaultOpen">
-      Rent Affordability
-    </button>
-    <button class="tablinks" onclick="openTab(event, 'rentIncreaseTab')">
-      Rent Increase
-    </button>
+  <!-- Top bar with Theme Toggle -->
+  <div class="top-bar">
+    <button id="toggleTheme">Switch to Dark Mode</button>
   </div>
 
-  <!-- TAB 1: AFFORDABILITY CALCULATOR -->
-  <div id="affordabilityTab" class="tabcontent">
-    <div class="container">
-      <h1>Rent Affordability Calculator</h1>
-      
-      <label for="rent">Monthly Rent (£):</label>
-      <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter your monthly rent" />
-      
-      <label for="income">Your Annual Income (£):</label>
-      <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income (optional)" />
-      
-      <label for="incomeSlider">Adjust Income (Slider, rounds to nearest £100):</label>
-      <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0">
-      
-      <button onclick="calculateIncome()">Calculate</button>
-      
-      <p class="result" id="tenantResult"></p>
-      <p class="result" id="guarantorResult"></p>
-      <p class="result" id="affordabilityResult"></p>
+  <!-- RENT AFFORDABILITY TAB -->
+  <div class="calc-container" id="rentAffordabilityTab">
+    <h1>Rent Affordability Calculator</h1>
+    
+    <label for="rent">Monthly Rent (£):</label>
+    <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter your monthly rent" />
+    
+    <label for="income">Your Annual Income (£):</label>
+    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income (optional)" />
+    
+    <label for="incomeSlider">Adjust Income (Slider, rounds to nearest £100):</label>
+    <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0">
+    
+    <button onclick="calculateIncome()">Calculate</button>
+    
+    <p class="result" id="tenantResult"></p>
+    <p class="result" id="guarantorResult"></p>
+    <p class="result" id="affordabilityResult"></p>
+  </div>
+  <!-- Canvas for the Rent Affordability graph -->
+  <canvas id="affordabilityChart" width="500" height="250"></canvas>
+
+  <!-- RENTAL INCREASE TAB -->
+  <div class="calc-container" id="rentalIncreaseTab">
+    <h1>Rental Increase Calculator</h1>
+    <p style="text-align: center;">
+      This calculator uses a tapering formula with a 25% cap above a 6% market difference.
+    </p>
+
+    <label for="currentRent">Current Rent (C):</label>
+    <input type="number" id="currentRent" min="1" step="0.01" placeholder="e.g. 800" />
+
+    <label for="openMarketRent">Open Market Rent (M):</label>
+    <input type="number" id="openMarketRent" min="1" step="0.01" placeholder="e.g. 900" />
+
+    <button onclick="calculateRentIncrease()">Calculate Allowed Increase</button>
+    
+    <div id="rentIncreaseResult" class="result" style="display: none;"></div>
+  </div>
+
+  <!-- UTILITY BILL TAB -->
+  <div class="calc-container" id="utilityBillTab">
+    <h1>Utility Bill Calculator</h1>
+    <p style="text-align:center;">
+      Estimates monthly & annual costs for Electricity and Gas using Ofgem average usage.
+    </p>
+
+    <!-- Household Size -->
+    <label for="householdSize">Household Size:</label>
+    <select id="householdSize">
+      <option value="1-2">1-2 people</option>
+      <option value="2-3" selected>2-3 people</option>
+      <option value="4-5">4-5 people</option>
+    </select>
+
+    <!-- Region: Southern Scotland (hard-coded for now) -->
+    <label for="region">Region:</label>
+    <select id="region">
+      <option value="southern_scotland" selected>Southern Scotland</option>
+    </select>
+
+    <!-- EPC Rating Toggle & Select -->
+    <div style="margin-bottom: 5px;">
+      <input type="checkbox" id="useEpcToggle" />
+      <label for="useEpcToggle" style="display:inline;">Apply EPC Rating Multiplier?</label>
     </div>
-    <canvas id="affordabilityChart" width="500" height="250"></canvas>
+    <label for="energyRating">EPC Rating (A–G):</label>
+    <select id="energyRating" disabled>
+      <option value="A">A (Most Efficient, 0.8×)</option>
+      <option value="B">B (0.9×)</option>
+      <option value="C" selected>C (1.0×)</option>
+      <option value="D">D (1.1×)</option>
+      <option value="E">E (1.2×)</option>
+      <option value="F">F (1.3×)</option>
+      <option value="G">G (1.4×)</option>
+    </select>
+
+    <button onclick="calculateUtilityBill()">Calculate Utility Costs</button>
+    
+    <p class="result" id="utilityResult"></p>
   </div>
 
-  <!-- TAB 2: RENT INCREASE CALCULATOR -->
-  <div id="rentIncreaseTab" class="tabcontent">
-    <div class="container">
-      <h1>Rent Increase Calculator</h1>
-      <p style="text-align: center;">
-        Enter your current rent and the open market rent below to see the allowed increase.
-      </p>
-      
-      <label for="currentRentInput">Current Rent (C):</label>
-      <input type="number" id="currentRentInput" min="1" step="0.01" placeholder="e.g. 800" />
-      
-      <label for="openMarketRentInput">Open Market Rent (M):</label>
-      <input type="number" id="openMarketRentInput" min="1" step="0.01" placeholder="e.g. 900" />
-      
-      <button onclick="calculateRentIncrease()">Calculate Allowed Increase</button>
-      
-      <div id="rentIncreaseResult" class="result" style="display: none;"></div>
-
-      <p style="font-size: 0.9em; color: #666; text-align: center;">
-        <em>Note:</em> If the market difference is 6% or less, no increase is allowed 
-        (refer to legislation). Differences above 25% are capped at 25%.
-      </p>
-    </div>
-  </div>
-
-  <!-- Secret Game Button -->
+  <!-- SECRET GAME BUTTON -->
   <button id="secretButton">?</button>
-  
-  <!-- Secret Game Overlay -->
+
+  <!-- SECRET GAME OVERLAY -->
   <div id="gameContainer">
     <div id="gameContent">
       <h2>Secret Game: Click the Circle!</h2>
@@ -242,28 +294,15 @@
     </div>
   </div>
 
-  <script>
-    // ---------------------- TAB LOGIC ----------------------
-    function openTab(evt, tabName) {
-      // Hide all tabcontent
-      var tabcontent = document.getElementsByClassName("tabcontent");
-      for (var i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-      }
-      // Remove "active" from all tablinks
-      var tablinks = document.getElementsByClassName("tablinks");
-      for (var i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-      }
-      // Show the current tab
-      document.getElementById(tabName).style.display = "block";
-      // Add an "active" class to the button that opened the tab
-      evt.currentTarget.className += " active";
-    }
-    // Automatically open the first tab on page load
-    document.getElementById("defaultOpen").click();
+  <!-- BOTTOM TAB NAVIGATION -->
+  <div class="bottom-tabs">
+    <button id="tabBtnAffordability" class="active">Rent Affordability</button>
+    <button id="tabBtnIncrease">Rental Increase</button>
+    <button id="tabBtnUtility">Utility Bills</button>
+  </div>
 
-    // ---------------------- DARK/LIGHT MODE ----------------------
+  <script>
+    // ====== THEME TOGGLE ======
     const toggleThemeBtn = document.getElementById('toggleTheme');
     toggleThemeBtn.addEventListener('click', () => {
       document.body.classList.toggle('dark');
@@ -273,15 +312,51 @@
         : "Switch to Dark Mode";
     });
 
-    // ---------------------- RENT AFFORDABILITY CALCULATOR ----------------------
+    // ====== TABS ======
+    const tabBtnAffordability = document.getElementById('tabBtnAffordability');
+    const tabBtnIncrease = document.getElementById('tabBtnIncrease');
+    const tabBtnUtility = document.getElementById('tabBtnUtility');
+
+    const rentAffordabilityTab = document.getElementById('rentAffordabilityTab');
+    const rentalIncreaseTab = document.getElementById('rentalIncreaseTab');
+    const utilityBillTab = document.getElementById('utilityBillTab');
+
+    // Show the "Rent Affordability" tab by default
+    rentAffordabilityTab.style.display = 'block';
+
+    function hideAllTabs() {
+      rentAffordabilityTab.style.display = 'none';
+      rentalIncreaseTab.style.display = 'none';
+      utilityBillTab.style.display = 'none';
+      tabBtnAffordability.classList.remove('active');
+      tabBtnIncrease.classList.remove('active');
+      tabBtnUtility.classList.remove('active');
+    }
+
+    tabBtnAffordability.addEventListener('click', () => {
+      hideAllTabs();
+      rentAffordabilityTab.style.display = 'block';
+      tabBtnAffordability.classList.add('active');
+    });
+    tabBtnIncrease.addEventListener('click', () => {
+      hideAllTabs();
+      rentalIncreaseTab.style.display = 'block';
+      tabBtnIncrease.classList.add('active');
+    });
+    tabBtnUtility.addEventListener('click', () => {
+      hideAllTabs();
+      utilityBillTab.style.display = 'block';
+      tabBtnUtility.classList.add('active');
+    });
+
+    // ====== RENT AFFORDABILITY CALCULATOR ======
     // Real-time calculation on rent input change
     document.getElementById('rent').addEventListener('input', calculateIncome);
 
-    // Income text input and slider synchronization
+    // Income text input and slider
     const incomeText = document.getElementById('income');
     const incomeSlider = document.getElementById('incomeSlider');
 
-    // When the text input changes, update the slider (rounded to the nearest £100)
     incomeText.addEventListener('input', function() {
       const value = parseFloat(this.value);
       if (!isNaN(value)) {
@@ -289,8 +364,6 @@
       }
       calculateIncome();
     });
-
-    // When the slider changes, round its value, update text, recalc
     incomeSlider.addEventListener('input', function() {
       let sliderValue = Math.round(parseFloat(this.value) / 100) * 100;
       this.value = sliderValue;
@@ -299,14 +372,13 @@
     });
 
     function calculateIncome() {
-      const rentInput = document.getElementById('rent');
       const tenantResult = document.getElementById('tenantResult');
       const guarantorResult = document.getElementById('guarantorResult');
       const affordabilityResult = document.getElementById('affordabilityResult');
-      const rent = parseFloat(rentInput.value);
+      const rent = parseFloat(document.getElementById('rent').value);
       const userIncome = parseFloat(incomeText.value);
 
-      // Validate rent
+      // Validate rent input
       if (isNaN(rent) || rent < 0) {
         tenantResult.textContent = "Please enter a valid positive number for rent.";
         guarantorResult.textContent = "";
@@ -315,13 +387,13 @@
         return;
       }
 
-      // Required incomes
+      // Calculate required incomes
       const tenantIncomeRequired = rent * 30;
       const guarantorIncomeRequired = rent * 36;
       tenantResult.textContent = "Minimum Tenant Annual Income: £" + tenantIncomeRequired.toLocaleString();
       guarantorResult.textContent = "Minimum Guarantor Annual Income: £" + guarantorIncomeRequired.toLocaleString();
 
-      // Affordability check
+      // Determine affordability status if user income is provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         if (userIncome >= tenantIncomeRequired) {
           affordabilityResult.textContent = "Your income is AFFORDABLE for this rent.";
@@ -334,7 +406,7 @@
         affordabilityResult.textContent = "";
       }
 
-      // Draw the graph if user income is provided
+      // Draw the graph with an animated marker if user income is provided
       if (!isNaN(userIncome) && userIncome >= 0) {
         animateMarker(tenantIncomeRequired, userIncome);
       } else {
@@ -342,21 +414,20 @@
       }
     }
 
-    // Clear the canvas
+    // Canvas for the Rent Affordability
     function clearCanvas() {
       const canvas = document.getElementById('affordabilityChart');
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    // Draw the graph (with optional marker radius for animation)
     function drawGraph(threshold, userIncome, markerRadius = 8) {
       const canvas = document.getElementById('affordabilityChart');
       const ctx = canvas.getContext('2d');
       const width = canvas.width;
       const height = canvas.height;
-      
-      // Clear
+
+      // Clear canvas
       ctx.clearRect(0, 0, width, height);
 
       // Graph margins
@@ -366,15 +437,15 @@
       const marginBottom = 40;
       const graphWidth = width - marginLeft - marginRight;
 
-      // Determine max value for x-axis
+      // Determine max for the x-axis
       let maxValue = threshold;
-      const userIncomeVal = !isNaN(userIncome) ? userIncome : 0;
-      if (userIncomeVal > maxValue) {
-        maxValue = userIncomeVal;
+      const userVal = !isNaN(userIncome) ? userIncome : 0;
+      if (userVal > maxValue) {
+        maxValue = userVal;
       }
-      maxValue *= 1.2;
+      maxValue *= 1.2; // add a little headroom
 
-      // Draw x-axis
+      // X-axis
       ctx.beginPath();
       ctx.moveTo(marginLeft, height - marginBottom);
       ctx.lineTo(width - marginRight, height - marginBottom);
@@ -382,7 +453,7 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Ticks & labels
+      // Ticks
       const numTicks = 5;
       ctx.fillStyle = "#333";
       ctx.textAlign = "center";
@@ -397,6 +468,7 @@
         ctx.fillText("£" + Math.round(tickValue).toLocaleString(), xPos, height - marginBottom + 8);
       }
 
+      // Convert a value to X coordinate
       function valueToX(value) {
         return marginLeft + (value / maxValue) * graphWidth;
       }
@@ -429,7 +501,6 @@
       }
     }
 
-    // Animate the marker from radius 0 to 8 over 500ms
     function animateMarker(threshold, userIncome) {
       const duration = 500;
       const finalRadius = 8;
@@ -447,28 +518,22 @@
       requestAnimationFrame(animationStep);
     }
 
-    // ---------------------- RENT INCREASE CALCULATOR (TAB 2) ----------------------
+    // ====== RENTAL INCREASE CALCULATOR ======
     function calculateRentIncrease() {
-      const currentRentInput = document.getElementById('currentRentInput');
-      const openMarketRentInput = document.getElementById('openMarketRentInput');
+      const currentRent = parseFloat(document.getElementById('currentRent').value);
+      const openMarketRent = parseFloat(document.getElementById('openMarketRent').value);
       const resultDiv = document.getElementById('rentIncreaseResult');
-      resultDiv.style.display = 'block'; // Show the result area
+      resultDiv.style.display = 'block';
 
-      // 1) Get user inputs
-      const currentRent = parseFloat(currentRentInput.value);
-      const openMarketRent = parseFloat(openMarketRentInput.value);
-
-      // Validate
       if (isNaN(currentRent) || isNaN(openMarketRent) || currentRent <= 0 || openMarketRent <= 0) {
         resultDiv.innerHTML = "<p>Please enter valid positive numbers for both rents.</p>";
         return;
       }
 
-      // 2) Compute Market Difference %
+      // Market Difference %
       const difference = openMarketRent - currentRent;
       const marketDiffPercent = (difference / currentRent) * 100;
 
-      // 3) If difference <= 6%, no increase
       if (marketDiffPercent <= 6) {
         resultDiv.innerHTML = `
           <p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>
@@ -477,36 +542,95 @@
         return;
       }
 
-      // 4) Cap difference at 25%
+      // Tapering formula with cap at 25%
       const usedDiffPercent = Math.min(marketDiffPercent, 25);
-
-      // Tapering formula:
-      // New Rent = floor( C × ((106 + (usedDiffPercent - 6)/3) / 100) )
       const newRent = Math.floor(
         currentRent * ((106 + ((usedDiffPercent - 6) / 3)) / 100)
       );
-
-      // 5) Display results
       const increaseAmount = newRent - currentRent;
-      let cappedNote = '';
+
+      let capNote = '';
       if (marketDiffPercent > 25) {
-        cappedNote = `
+        capNote = `
           <p style="color: #d00;">
-            (Your actual difference was ${marketDiffPercent.toFixed(2)}%, 
-            but it was capped at 25%.)
+            (Original difference was ${marketDiffPercent.toFixed(2)}%, capped at 25%.)
           </p>
         `;
       }
 
       resultDiv.innerHTML = `
         <p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>
-        ${cappedNote}
+        ${capNote}
         <p><strong>New Rent (rounded down):</strong> £${newRent.toFixed(2)}</p>
         <p><strong>Increase Amount:</strong> £${increaseAmount.toFixed(2)}</p>
       `;
     }
 
-    // ---------------------- SECRET GAME ----------------------
+    // ====== UTILITY BILL CALCULATOR ======
+    const useEpcToggle = document.getElementById('useEpcToggle');
+    const energyRatingSelect = document.getElementById('energyRating');
+    useEpcToggle.addEventListener('change', () => {
+      // Enable/disable the EPC rating select
+      energyRatingSelect.disabled = !useEpcToggle.checked;
+    });
+
+    function calculateUtilityBill() {
+      const householdSize = document.getElementById('householdSize').value; // "1-2", "2-3", "4-5"
+      const utilityResult = document.getElementById('utilityResult');
+
+      // Hard-coded usage from Ofgem
+      let electricityUsage = 0; // kWh/year
+      let gasUsage = 0;        // kWh/year
+      if (householdSize === '1-2') {
+        electricityUsage = 1800;
+        gasUsage = 7500;
+      } else if (householdSize === '2-3') {
+        electricityUsage = 2700;
+        gasUsage = 11500;
+      } else {
+        electricityUsage = 4100;
+        gasUsage = 17000;
+      }
+
+      // Southern Scotland rates (from screenshot)
+      const elecUnitRate = 0.2396;   // £ per kWh
+      const elecStanding  = 0.6417;  // £ per day
+      const gasUnitRate  = 0.0609;   // £ per kWh
+      const gasStanding   = 0.3180;  // £ per day
+
+      // Annual costs (no EPC multiplier yet)
+      const elecAnnual = electricityUsage * elecUnitRate + (elecStanding * 365);
+      const gasAnnual  = gasUsage * gasUnitRate + (gasStanding * 365);
+      let totalAnnual  = elecAnnual + gasAnnual;
+
+      // If EPC rating toggle is ON, apply multiplier
+      if (useEpcToggle.checked) {
+        const rating = energyRatingSelect.value;
+        let multiplier = 1.0;
+        switch (rating) {
+          case 'A': multiplier = 0.8; break;
+          case 'B': multiplier = 0.9; break;
+          case 'C': multiplier = 1.0; break;
+          case 'D': multiplier = 1.1; break;
+          case 'E': multiplier = 1.2; break;
+          case 'F': multiplier = 1.3; break;
+          case 'G': multiplier = 1.4; break;
+          default:  multiplier = 1.0;
+        }
+        totalAnnual *= multiplier;
+      }
+
+      const totalMonthly = totalAnnual / 12;
+
+      utilityResult.style.color = "green";
+      utilityResult.innerHTML = `
+        <strong>Total cost per month:</strong> £${totalMonthly.toFixed(2)}<br>
+        <strong>Total cost per year:</strong> £${totalAnnual.toFixed(2)}<br><br>
+        <em>The results provided by this calculator are estimations only. Actual figures may vary.</em>
+      `;
+    }
+
+    // ====== SECRET GAME CODE ======
     const secretButton = document.getElementById('secretButton');
     const gameContainer = document.getElementById('gameContainer');
     const closeGameButton = document.getElementById('closeGameButton');
@@ -515,13 +639,13 @@
     const gameTimerSpan = document.getElementById('gameTimer');
     const gameCanvas = document.getElementById('gameCanvas');
     const gameCtx = gameCanvas.getContext('2d');
-    
+
     let gameScore = 0;
     let gameTime = 10; // seconds
     let gameInterval;
     let circleX, circleY;
     const circleRadius = 30;
-    
+
     function startGame() {
       gameScore = 0;
       gameTime = 10;
@@ -538,13 +662,13 @@
         }
       }, 1000);
     }
-    
+
     function endGame() {
       clearInterval(gameInterval);
       gameCanvas.removeEventListener('click', canvasClickHandler);
       playAgainButton.style.display = "inline-block";
     }
-    
+
     function canvasClickHandler(event) {
       const rect = gameCanvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
@@ -556,7 +680,7 @@
         drawCircle();
       }
     }
-    
+
     function drawCircle() {
       gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
       circleX = Math.random() * (gameCanvas.width - 2 * circleRadius) + circleRadius;
@@ -566,17 +690,17 @@
       gameCtx.fillStyle = "#007BFF";
       gameCtx.fill();
     }
-    
+
     secretButton.addEventListener('click', () => {
       gameContainer.style.display = "block";
       startGame();
     });
-    
+
     closeGameButton.addEventListener('click', () => {
       gameContainer.style.display = "none";
       clearInterval(gameInterval);
     });
-    
+
     playAgainButton.addEventListener('click', () => {
       startGame();
     });
