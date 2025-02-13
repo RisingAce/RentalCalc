@@ -215,9 +215,10 @@
     <p class="result" id="tenantResult"></p>
     <p class="result" id="guarantorResult"></p>
     <p class="result" id="affordabilityResult"></p>
+
+    <!-- Canvas is now inside the Rent Affordability container -->
+    <canvas id="affordabilityChart" width="500" height="250"></canvas>
   </div>
-  <!-- Canvas for the Rent Affordability graph -->
-  <canvas id="affordabilityChart" width="500" height="250"></canvas>
 
   <!-- RENTAL INCREASE TAB -->
   <div class="calc-container" id="rentalIncreaseTab">
@@ -350,10 +351,8 @@
     });
 
     // ====== RENT AFFORDABILITY CALCULATOR ======
-    // Real-time calculation on rent input change
     document.getElementById('rent').addEventListener('input', calculateIncome);
 
-    // Income text input and slider
     const incomeText = document.getElementById('income');
     const incomeSlider = document.getElementById('incomeSlider');
 
@@ -414,7 +413,6 @@
       }
     }
 
-    // Canvas for the Rent Affordability
     function clearCanvas() {
       const canvas = document.getElementById('affordabilityChart');
       const ctx = canvas.getContext('2d');
@@ -592,13 +590,13 @@
         gasUsage = 17000;
       }
 
-      // Southern Scotland rates (from screenshot)
-      const elecUnitRate = 0.2396;   // £ per kWh
-      const elecStanding  = 0.6417;  // £ per day
-      const gasUnitRate  = 0.0609;   // £ per kWh
-      const gasStanding   = 0.3180;  // £ per day
+      // Southern Scotland rates
+      const elecUnitRate = 0.2396;   // £/kWh
+      const elecStanding  = 0.6417;  // £/day
+      const gasUnitRate  = 0.0609;   // £/kWh
+      const gasStanding   = 0.3180;  // £/day
 
-      // Annual costs (no EPC multiplier yet)
+      // Annual costs
       const elecAnnual = electricityUsage * elecUnitRate + (elecStanding * 365);
       const gasAnnual  = gasUsage * gasUnitRate + (gasStanding * 365);
       let totalAnnual  = elecAnnual + gasAnnual;
@@ -641,7 +639,7 @@
     const gameCtx = gameCanvas.getContext('2d');
 
     let gameScore = 0;
-    let gameTime = 10; // seconds
+    let gameTime = 10;
     let gameInterval;
     let circleX, circleY;
     const circleRadius = 30;
