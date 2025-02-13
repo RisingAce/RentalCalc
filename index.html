@@ -232,13 +232,9 @@
       border-color: #777;
     }
     .toggle-section label {
-      display: flex;
-      align-items: center;
+      display: block;
       margin-bottom: 8px;
       cursor: pointer;
-    }
-    .toggle-section input[type="checkbox"] {
-      margin-right: 8px;
     }
   </style>
 </head>
@@ -323,14 +319,20 @@
         <option value="southern_scotland" selected>Southern Scotland</option>
       </select>
 
-      <!-- Toggles grouped in a labeled box -->
+      <!-- Additional Options: EPC and Council Tax Inclusion -->
       <div class="toggle-section">
         <h4 style="margin-top:0;">Additional Options:</h4>
-        
-        <label>
-          <input type="checkbox" id="useEpcToggle" />
-          Apply EPC Rating Multiplier?
-        </label>
+        <label for="epcRatingSelect">EPC Rating Multiplier:</label>
+        <select id="epcRatingSelect">
+          <option value="off" selected>Off (No multiplier)</option>
+          <option value="0.8">A (0.8×)</option>
+          <option value="0.9">B (0.9×)</option>
+          <option value="1.0">C (1.0×)</option>
+          <option value="1.1">D (1.1×)</option>
+          <option value="1.2">E (1.2×)</option>
+          <option value="1.3">F (1.3×)</option>
+          <option value="1.4">G (1.4×)</option>
+        </select>
 
         <label>
           <input type="checkbox" id="combineCouncilTaxToggle" />
@@ -696,13 +698,6 @@
       H: { total: 4639.62 }
     };
 
-    const useEpcToggle = document.getElementById('useEpcToggle');
-    const energyRatingSelect = document.getElementById('energyRating');
-    useEpcToggle.addEventListener('change', () => {
-      // Enable/disable the EPC rating select
-      energyRatingSelect.disabled = !useEpcToggle.checked;
-    });
-
     // Called when the user clicks "Calculate Energy Costs"
     function calculateUtilityBill() {
       const householdSize = document.getElementById('householdSize').value; // "1-2", "2-3", "4-5"
@@ -734,22 +729,13 @@
       let gasAnnual  = gasUsage * gasUnitRate + (gasStanding * 365);
       let totalAnnual  = elecAnnual + gasAnnual;
 
-      // If EPC rating toggle is ON, apply multiplier
-      if (useEpcToggle.checked) {
-        const rating = energyRatingSelect.value;
-        let multiplier = 1.0;
-        switch (rating) {
-          case 'A': multiplier = 0.8; break;
-          case 'B': multiplier = 0.9; break;
-          case 'C': multiplier = 1.0; break;
-          case 'D': multiplier = 1.1; break;
-          case 'E': multiplier = 1.2; break;
-          case 'F': multiplier = 1.3; break;
-          case 'G': multiplier = 1.4; break;
-          default:  multiplier = 1.0;
-        }
-        totalAnnual *= multiplier;
+      // Get the EPC multiplier from the select. If "off", then multiplier = 1.0.
+      const epcValue = document.getElementById('epcRatingSelect').value;
+      let multiplier = 1.0;
+      if (epcValue !== "off") {
+        multiplier = parseFloat(epcValue);
       }
+      totalAnnual *= multiplier;
 
       energyAnnualCost = totalAnnual; // store globally
 
@@ -874,6 +860,9 @@
     playAgainButton.addEventListener('click', () => {
       startGame();
     });
+
+    // Recalculate energy cost when EPC selection changes
+    document.getElementById('epcRatingSelect').addEventListener('change', calculateUtilityBill);
   </script>
 </body>
 </html>
