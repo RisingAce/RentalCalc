@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rettie Multi-Calculator</title>
+  <title>Rettie Multi-Calculator + Fun Word Game</title>
 
-  <!-- Example of adding Effra font (if you have a public link or local hosting).
-       If you don't have Effra, consider replacing with a fallback, e.g., 'Open Sans'. -->
+  <!-- Example: If you have a custom or brand font, include it here.
+       Otherwise, fallback to 'Effra' or a similar sans-serif. -->
   <style>
     @import url('https://fonts.cdnfonts.com/css/effra'); /* Example only */
   </style>
@@ -17,7 +17,7 @@
       --heritage-green: #004953; /* Primary brand color */
       --ivory: #faf9f9;         /* Background tint */
       --slate: #4d4d4d;         /* Body copy color */
-      --steel: #4f758b;         /* Optionally for buttons or highlights */
+      --steel: #4f758b;         /* Optionally for highlights */
       --moss: #5c7f71;          /* Secondary accent */
       --zinc: #7da1c4;          /* Secondary accent */
       --brick: #91301a;         /* Callout color */
@@ -34,7 +34,7 @@
       transition: background 0.3s, color 0.3s;
     }
 
-    /* Light/Dark toggles (if you still want them) */
+    /* Light/Dark toggles */
     body.light {
       background: var(--ivory);
       color: var(--slate);
@@ -163,7 +163,7 @@
       margin-bottom: 12px;
     }
 
-    /* Canvas styling (for Rent Affordability) */
+    /* Canvas styling (for Rent Affordability & Rent Increase) */
     #affordabilityChart, #rentIncreaseChart {
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -177,11 +177,11 @@
       border-color: #666;
     }
 
-    /* Secret Button */
+    /* Secret Button for launching the game overlay */
     #secretButton {
       position: fixed;
       bottom: 10px;
-      right: 10px;
+      right: 60px; /* shifted so we have space for new toggles if needed */
       background: var(--brick);
       color: #fff;
       border: none;
@@ -196,7 +196,8 @@
     #secretButton:hover {
       opacity: 0.85;
     }
-    /* Secret Game Overlay */
+
+    /* SECRET GAME OVERLAY */
     #gameContainer {
       display: none;
       position: fixed;
@@ -220,49 +221,44 @@
       text-align: center;
     }
 
-    /* Hide containers by default */
-    #rentAffordabilityTab,
-    #rentalIncreaseTab,
-    #billsTab {
-      display: none;
-    }
-
-    /* Sub-tab navigation for Bills Calculator */
-    .sub-tabs {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 15px;
-    }
-    .sub-tabs button {
-      flex: 1;
-      margin: 0 3px;
-      padding: 10px;
-      font-size: 1em;
-      border-radius: 4px;
-      transition: background 0.3s;
-    }
-    .sub-tabs button.active {
-      background-color: var(--heritage-green);
-      color: #fff;
-    }
-    #energySubTab, #councilSubTab {
-      display: none;
-    }
-
-    .toggle-section {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-    .toggle-section label {
+    /* Circle click game container & word game container. We'll hide one when the other is active. */
+    #circleClickGame {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    #wordGame {
+      display: none; /* hidden by default */
+      margin-top: 20px;
+    }
+
+    /* Word game styling */
+    #scrambleWord {
+      display: block;
+      font-size: 1.4em;
+      margin: 10px auto;
+      font-weight: bold;
+    }
+    #wordGame input {
+      width: auto;
+      display: inline-block;
+      margin: 0 5px;
+    }
+
+    #gameSwitcher {
+      margin-top: 15px;
+      padding: 8px 14px;
+      font-size: 0.95em;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    #gameSwitcher:hover {
+      background-color: #ddd;
     }
   </style>
 </head>
-
 <body class="light">
   <!-- Top bar with Theme Toggle + Show/Hide Tabs -->
   <div class="top-bar">
@@ -272,23 +268,23 @@
 
   <!-- TOP TABS (Main Page Navigation) -->
   <div class="top-tabs" id="topTabsContainer">
-    <button id="tabBtnAffordability" class="active">Rent Affordability</button>
+    <button id="tabBtnAffordability">Rent Affordability</button>
     <button id="tabBtnIncrease">Rental Increase</button>
     <button id="tabBtnBills">Bills Calculator</button>
   </div>
 
   <!-- RENT AFFORDABILITY TAB -->
-  <div class="calc-container" id="rentAffordabilityTab">
+  <div class="calc-container" id="rentAffordabilityTab" style="display:none;">
     <h1>Rent Affordability Calculator</h1>
     
     <label for="rent">Monthly Rent (£) [Optional]:</label>
-    <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter monthly rent (optional)" />
+    <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter monthly rent (optional)"/>
     
     <label for="income">Your Annual Income (£):</label>
-    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income" />
+    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income"/>
     
     <label for="incomeSlider">Adjust Income (rounds to nearest £100):</label>
-    <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0">
+    <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0"/>
     
     <button onclick="calculateIncome()">Calculate</button>
     
@@ -301,17 +297,17 @@
   </div>
 
   <!-- RENTAL INCREASE TAB -->
-  <div class="calc-container" id="rentalIncreaseTab">
+  <div class="calc-container" id="rentalIncreaseTab" style="display:none;">
     <h1>Rental Increase Calculator</h1>
     <p style="text-align: center;">
       This calculator uses a tapering formula with a <strong>24%</strong> cap above a 6% market difference.
     </p>
 
     <label for="currentRent">Current Rent (C):</label>
-    <input type="number" id="currentRent" min="1" step="0.01" placeholder="e.g. 800" />
+    <input type="number" id="currentRent" min="1" step="0.01" placeholder="e.g. 800"/>
 
     <label for="openMarketRent">Open Market Rent (M):</label>
-    <input type="number" id="openMarketRent" min="1" step="0.01" placeholder="e.g. 900" />
+    <input type="number" id="openMarketRent" min="1" step="0.01" placeholder="e.g. 900"/>
 
     <button onclick="calculateRentIncrease()">Calculate Allowed Increase</button>
     
@@ -321,7 +317,7 @@
   </div>
 
   <!-- BILLS CALCULATOR TAB -->
-  <div class="calc-container" id="billsTab">
+  <div class="calc-container" id="billsTab" style="display:none;">
     <h1>Bills Calculator</h1>
 
     <!-- Sub-Tab Buttons -->
@@ -363,7 +359,7 @@
         </select>
 
         <label>
-          <input type="checkbox" id="combineCouncilTaxToggle" />
+          <input type="checkbox" id="combineCouncilTaxToggle"/>
           Include Council Tax in total?
         </label>
       </div>
@@ -373,7 +369,7 @@
     </div>
 
     <!-- COUNCIL TAX SUB-TAB -->
-    <div id="councilSubTab">
+    <div id="councilSubTab" style="display:none;">
       <p style="text-align:center;">
         Select your Council Tax Band to see annual charges (2024/25).
       </p>
@@ -401,16 +397,33 @@
   <!-- SECRET GAME OVERLAY -->
   <div id="gameContainer">
     <div id="gameContent">
-      <h2>Secret Game: Click the Circle!</h2>
-      <p>
-        Score: <span id="gameScore">0</span> |
-        Time Left: <span id="gameTimer">10</span>s
-      </p>
-      <canvas id="gameCanvas" width="400" height="300"
-              style="border: 1px solid #333; background: #f9f9f9;"></canvas>
-      <br>
-      <button id="playAgainButton" style="display:none;">Play Again</button>
-      <button id="closeGameButton" style="margin-top: 10px;">Close Game</button>
+      <h2 id="gameTitle">Secret Game: Click the Circle!</h2>
+
+      <!-- Circle Click Game Container -->
+      <div id="circleClickGame">
+        <p>
+          Score: <span id="gameScore">0</span> |
+          Time Left: <span id="gameTimer">10</span>s
+        </p>
+        <canvas id="gameCanvas" width="400" height="300"
+                style="border: 1px solid #333; background: #f9f9f9;"></canvas>
+        <br/>
+        <button id="playAgainButton" style="display:none;">Play Again</button>
+        <button id="closeGameButton" style="margin-top: 10px;">Close Game</button>
+      </div>
+
+      <!-- Fun Word Game -->
+      <div id="wordGame">
+        <h3>Word Shuffle!</h3>
+        <p id="scrambleWord"></p>
+        <input type="text" id="guessInput" placeholder="Your guess" maxlength="12"/>
+        <br/>
+        <button id="submitGuess">Submit Guess</button>
+        <p id="wordGameMessage"></p>
+      </div>
+
+      <!-- Button to switch between circle game & word game -->
+      <button id="gameSwitcher">Switch to Word Game</button>
     </div>
   </div>
 
@@ -445,19 +458,18 @@
     const billsTab = document.getElementById('billsTab');
 
     function hideAllTabs() {
-  rentAffordabilityTab.style.display = 'none';
-  rentalIncreaseTab.style.display = 'none';
-  billsTab.style.display = 'none';
-  tabBtnAffordability.classList.remove('active');
-  tabBtnIncrease.classList.remove('active');
-  tabBtnBills.classList.remove('active');
-}
+      rentAffordabilityTab.style.display = 'none';
+      rentalIncreaseTab.style.display = 'none';
+      billsTab.style.display = 'none';
+      tabBtnAffordability.classList.remove('active');
+      tabBtnIncrease.classList.remove('active');
+      tabBtnBills.classList.remove('active');
+    }
 
-// Show “Rent Affordability” by default
-hideAllTabs();
-rentAffordabilityTab.style.display = 'block';
-tabBtnAffordability.classList.add('active');
-
+    // Show Rent Affordability by default
+    hideAllTabs();
+    rentAffordabilityTab.style.display = 'block';
+    tabBtnAffordability.classList.add('active');
 
     tabBtnAffordability.addEventListener('click', () => {
       hideAllTabs();
@@ -482,15 +494,17 @@ tabBtnAffordability.classList.add('active');
     const energySubTab = document.getElementById('energySubTab');
     const councilSubTab = document.getElementById('councilSubTab');
 
-    // Show Energy by default
-    energySubTab.style.display = 'block';
-
     function hideBillsSubTabs() {
       energySubTab.style.display = 'none';
       councilSubTab.style.display = 'none';
       subTabEnergy.classList.remove('active');
       subTabCouncil.classList.remove('active');
     }
+
+    // Show Energy by default
+    hideBillsSubTabs();
+    energySubTab.style.display = 'block';
+    subTabEnergy.classList.add('active');
 
     subTabEnergy.addEventListener('click', () => {
       hideBillsSubTabs();
@@ -588,7 +602,6 @@ tabBtnAffordability.classList.add('active');
 
       // If we have both rentValue & userIncome, animate the graph
       if (!isNaN(rentValue) && rentValue >= 0 && !isNaN(userIncome) && userIncome >= 0) {
-        // threshold = required tenant income, userIncome is userIncome
         animateMarker(rentValue * 30, userIncome);
       } else {
         // Only clear or draw with no marker if partial data
@@ -904,18 +917,70 @@ tabBtnAffordability.classList.add('active');
     const gameContainer = document.getElementById('gameContainer');
     const closeGameButton = document.getElementById('closeGameButton');
     const playAgainButton = document.getElementById('playAgainButton');
+    const gameTitle = document.getElementById('gameTitle');
+
+    const circleClickGame = document.getElementById('circleClickGame');
+    const wordGameDiv = document.getElementById('wordGame');
+    const gameSwitcherBtn = document.getElementById('gameSwitcher');
+
+    // Circle game elements
     const gameScoreSpan = document.getElementById('gameScore');
     const gameTimerSpan = document.getElementById('gameTimer');
     const gameCanvas = document.getElementById('gameCanvas');
     const gameCtx = gameCanvas.getContext('2d');
-
     let gameScore = 0;
     let gameTime = 10;
     let gameInterval;
     let circleX, circleY;
     const circleRadius = 30;
 
-    function startGame() {
+    // Word game elements
+    const scrambleWordElement = document.getElementById('scrambleWord');
+    const guessInput = document.getElementById('guessInput');
+    const submitGuessBtn = document.getElementById('submitGuess');
+    const wordGameMessage = document.getElementById('wordGameMessage');
+
+    // List of sample words (keep them short for fun)
+    const WORD_POOL = ["HOUSE", "RENT", "MONEY", "LEASE", "CANVAS", "CODE", "SCOTLAND", "FAIR" ];
+    let scrambleAnswer = "";
+    let isCircleGameActive = true; // track which game is being played
+
+    secretButton.addEventListener('click', () => {
+      gameContainer.style.display = "block";
+      startCircleGame();
+    });
+
+    closeGameButton.addEventListener('click', () => {
+      gameContainer.style.display = "none";
+      // clear intervals
+      clearInterval(gameInterval);
+    });
+
+    // Switch between circle game & word game
+    gameSwitcherBtn.addEventListener('click', () => {
+      if (isCircleGameActive) {
+        // switch to Word Game
+        circleClickGame.style.display = 'none';
+        wordGameDiv.style.display = 'block';
+        gameTitle.textContent = "Fun Word Shuffle!";
+        gameSwitcherBtn.textContent = "Switch to Circle Game";
+        isCircleGameActive = false;
+        clearInterval(gameInterval);
+        setupWordGame();
+      } else {
+        // switch back to Circle Game
+        circleClickGame.style.display = 'block';
+        wordGameDiv.style.display = 'none';
+        gameTitle.textContent = "Secret Game: Click the Circle!";
+        gameSwitcherBtn.textContent = "Switch to Word Game";
+        isCircleGameActive = true;
+        startCircleGame();
+      }
+    });
+
+    // ================ Circle Click Game Functions ================
+    function startCircleGame() {
+      // Reset & start
       gameScore = 0;
       gameTime = 10;
       gameScoreSpan.textContent = gameScore;
@@ -927,12 +992,12 @@ tabBtnAffordability.classList.add('active');
         gameTime--;
         gameTimerSpan.textContent = gameTime;
         if (gameTime <= 0) {
-          endGame();
+          endCircleGame();
         }
       }, 1000);
     }
 
-    function endGame() {
+    function endCircleGame() {
       clearInterval(gameInterval);
       gameCanvas.removeEventListener('click', canvasClickHandler);
       playAgainButton.style.display = "inline-block";
@@ -960,22 +1025,52 @@ tabBtnAffordability.classList.add('active');
       gameCtx.fill();
     }
 
-    secretButton.addEventListener('click', () => {
-      gameContainer.style.display = "block";
-      startGame();
-    });
-
-    closeGameButton.addEventListener('click', () => {
-      gameContainer.style.display = "none";
-      clearInterval(gameInterval);
-    });
-
     playAgainButton.addEventListener('click', () => {
-      startGame();
+      if (isCircleGameActive) {
+        startCircleGame();
+      } else {
+        setupWordGame();
+      }
+    });
+
+    // ================ Word Game Functions ================
+    function setupWordGame() {
+      // Reset for new puzzle
+      wordGameMessage.textContent = "";
+      guessInput.value = "";
+      scrambleWordElement.textContent = "";
+      // pick a random word
+      let randomIndex = Math.floor(Math.random() * WORD_POOL.length);
+      scrambleAnswer = WORD_POOL[randomIndex];
+      // scramble it
+      let scrambled = scrambleAnswer.split("");
+      for (let i = scrambled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
+      }
+      scrambleWordElement.textContent = scrambled.join(" ");
+    }
+
+    submitGuessBtn.addEventListener('click', () => {
+      const guess = guessInput.value.trim().toUpperCase();
+      if (!guess) {
+        wordGameMessage.textContent = "Please enter a guess!";
+        return;
+      }
+      if (guess === scrambleAnswer) {
+        wordGameMessage.textContent = "Correct! The word was " + scrambleAnswer + ".";
+        playAgainButton.style.display = "inline-block";
+      } else {
+        wordGameMessage.textContent = "Nope! Try again.";
+      }
     });
 
     // Recalculate energy cost when EPC selection changes
     document.getElementById('epcRatingSelect').addEventListener('change', calculateUtilityBill);
+
+    // On load, the secret game is hidden.
+    // The user can open it by pressing the secretButton.
+
   </script>
 </body>
 </html>
