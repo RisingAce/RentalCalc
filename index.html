@@ -445,13 +445,19 @@
     const billsTab = document.getElementById('billsTab');
 
     function hideAllTabs() {
-      rentAffordabilityTab.style.display = 'none';
-      rentalIncreaseTab.style.display = 'none';
-      billsTab.style.display = 'none';
-      tabBtnAffordability.classList.remove('active');
-      tabBtnIncrease.classList.remove('active');
-      tabBtnBills.classList.remove('active');
-    }
+  rentAffordabilityTab.style.display = 'none';
+  rentalIncreaseTab.style.display = 'none';
+  billsTab.style.display = 'none';
+  tabBtnAffordability.classList.remove('active');
+  tabBtnIncrease.classList.remove('active');
+  tabBtnBills.classList.remove('active');
+}
+
+// Show “Rent Affordability” by default
+hideAllTabs();
+rentAffordabilityTab.style.display = 'block';
+tabBtnAffordability.classList.add('active');
+
 
     tabBtnAffordability.addEventListener('click', () => {
       hideAllTabs();
