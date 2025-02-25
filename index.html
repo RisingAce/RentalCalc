@@ -286,6 +286,8 @@
     <button id="tabBtnAffordability">Rent Affordability</button>
     <button id="tabBtnIncrease">Rental Increase</button>
     <button id="tabBtnBills">Bills Calculator</button>
+    <!-- NEW TAB for Pro-Rata Rent -->
+    <button id="tabBtnProRata">Pro-Rata Rent</button>
   </div>
 
   <!-- RENT AFFORDABILITY TAB -->
@@ -405,6 +407,24 @@
     </div>
   </div>
 
+  <!-- NEW PRO-RATA RENT TAB -->
+  <div class="calc-container" id="proRataTab" style="display:none;">
+    <h1>Pro Rata Rent Calculator</h1>
+
+    <label for="monthlyProRataRent">Monthly Rent (£):</label>
+    <input type="number" id="monthlyProRataRent" placeholder="e.g. 800" />
+
+    <label for="startDateProRata">Start Date:</label>
+    <input type="date" id="startDateProRata" />
+
+    <label for="endDateProRata">End Date:</label>
+    <input type="date" id="endDateProRata" />
+
+    <button onclick="calculateProRata()">Calculate Rent Due</button>
+
+    <p class="result" id="proRataResult"></p>
+  </div>
+
   <!-- SECRET GAME BUTTON -->
   <button id="secretButton">?</button>
 
@@ -470,18 +490,22 @@
     const tabBtnAffordability = document.getElementById('tabBtnAffordability');
     const tabBtnIncrease = document.getElementById('tabBtnIncrease');
     const tabBtnBills = document.getElementById('tabBtnBills');
+    const tabBtnProRata = document.getElementById('tabBtnProRata');
 
     const rentAffordabilityTab = document.getElementById('rentAffordabilityTab');
     const rentalIncreaseTab = document.getElementById('rentalIncreaseTab');
     const billsTab = document.getElementById('billsTab');
+    const proRataTab = document.getElementById('proRataTab');
 
     function hideAllTabs() {
       rentAffordabilityTab.style.display = 'none';
       rentalIncreaseTab.style.display = 'none';
       billsTab.style.display = 'none';
+      proRataTab.style.display = 'none';
       tabBtnAffordability.classList.remove('active');
       tabBtnIncrease.classList.remove('active');
       tabBtnBills.classList.remove('active');
+      tabBtnProRata.classList.remove('active');
     }
 
     // Show Rent Affordability by default
@@ -503,6 +527,11 @@
       hideAllTabs();
       billsTab.style.display = 'block';
       tabBtnBills.classList.add('active');
+    });
+    tabBtnProRata.addEventListener('click', () => {
+      hideAllTabs();
+      proRataTab.style.display = 'block';
+      tabBtnProRata.classList.add('active');
     });
 
     // ====== BILLS SUB-TABS ======
@@ -875,6 +904,38 @@
       const monthly = councilTaxAnnual / 12;
       councilTaxResult.style.color = "green";
       councilTaxResult.innerHTML = `\n        <strong>Band ${band} Annual:</strong> £${councilTaxAnnual.toFixed(2)}<br>\n        <strong>Monthly (approx):</strong> £${monthly.toFixed(2)}<br>\n        <em>(Water & Sewerage included in total)</em>\n      `;
+    }
+
+    // ====== PRO-RATA RENT CALCULATOR ======
+    function calculateProRata() {
+      const monthlyRentEl = document.getElementById('monthlyProRataRent');
+      const startDateEl = document.getElementById('startDateProRata');
+      const endDateEl = document.getElementById('endDateProRata');
+      const resultEl = document.getElementById('proRataResult');
+
+      const monthlyRent = parseFloat(monthlyRentEl.value);
+      const startDate = new Date(startDateEl.value);
+      const endDate = new Date(endDateEl.value);
+
+      if(isNaN(monthlyRent) || !startDate || !endDate || monthlyRent <= 0) {
+        resultEl.innerText = 'Please enter valid rent and dates.';
+        resultEl.style.color = 'red';
+        return;
+      }
+
+      if(endDate <= startDate) {
+        resultEl.innerText = 'End date must be after start date.';
+        resultEl.style.color = 'red';
+        return;
+      }
+
+      const dailyRent = monthlyRent / 30;
+      const diffTime = Math.abs(endDate - startDate);
+      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const totalDue = dailyRent * daysRemaining;
+
+      resultEl.innerText = 'Rent Due: £' + totalDue.toFixed(2) + ' (' + daysRemaining + ' days)';
+      resultEl.style.color = 'green';
     }
 
     // ====== SECRET GAME CODE (Circle + Timed Word) ======
