@@ -171,6 +171,33 @@
       border-color: #666;
     }
 
+    /* Sub-tabs styling (used in Bills & now Rent Affordability) */
+    .sub-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .sub-tabs button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      color: var(--slate);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .sub-tabs button.active {
+      background-color: var(--heritage-green);
+      color: #fff;
+      border-color: var(--heritage-green);
+    }
+    .sub-tabs button:hover {
+      background-color: #e0e0e0;
+    }
+
     /* Secret Button for launching the game overlay */
     #secretButton {
       position: fixed;
@@ -292,25 +319,45 @@
 
   <!-- RENT AFFORDABILITY TAB -->
   <div class="calc-container" id="rentAffordabilityTab" style="display:none;">
-    <h1>Rent Affordability Calculator</h1>
+    <!-- Sub-tabs for Standard & Enhanced Calculators -->
+    <div class="sub-tabs" id="rentAffordabilitySubTabs">
+      <button id="subTabStandard" class="active">Standard Rent Affordability</button>
+      <button id="subTabEnhanced">Enhanced Rent Affordability</button>
+    </div>
 
-    <label for="rent">Monthly Rent (£) [Optional]:</label>
-    <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter monthly rent (optional)"/>
+    <!-- Standard Rent Affordability Calculator -->
+    <div id="standardRentAffordability">
+      <h1>Rent Affordability Calculator</h1>
+      <label for="rent">Monthly Rent (£) [Optional]:</label>
+      <input type="number" id="rent" aria-label="Monthly Rent in pounds" placeholder="Enter monthly rent (optional)"/>
+      <label for="income">Your Annual Income (£):</label>
+      <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income"/>
+      <label for="incomeSlider">Adjust Income (rounds to nearest £100):</label>
+      <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0"/>
+      <button onclick="calculateIncome()">Calculate</button>
+      <p class="result" id="tenantResult"></p>
+      <p class="result" id="guarantorResult"></p>
+      <p class="result" id="affordabilityResult"></p>
+      <p class="result" id="maxRentResult"></p>
+      <canvas id="affordabilityChart" width="500" height="250"></canvas>
+    </div>
 
-    <label for="income">Your Annual Income (£):</label>
-    <input type="number" id="income" aria-label="Your Annual Income in pounds" placeholder="Enter your annual income"/>
-
-    <label for="incomeSlider">Adjust Income (rounds to nearest £100):</label>
-    <input type="range" id="incomeSlider" min="0" max="300000" step="100" value="0"/>
-
-    <button onclick="calculateIncome()">Calculate</button>
-
-    <p class="result" id="tenantResult"></p>
-    <p class="result" id="guarantorResult"></p>
-    <p class="result" id="affordabilityResult"></p>
-    <p class="result" id="maxRentResult"></p>
-
-    <canvas id="affordabilityChart" width="500" height="250"></canvas>
+    <!-- Enhanced Rent Affordability Calculator -->
+    <div id="enhancedRentAffordability" style="display:none;">
+      <h1>Enhanced Rent Affordability Calculator</h1>
+      <label for="grossIncomeEnhanced">Annual Gross Income (£):</label>
+      <input type="number" id="grossIncomeEnhanced" value="24000" min="0">
+      <label for="ehePercentageEnhanced">Essential Household Expenditure (% of Net Income):</label>
+      <input type="number" id="ehePercentageEnhanced" value="20" min="0" max="100">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+        <input type="checkbox" id="useAverageCreditEnhanced" checked>
+        <label for="useAverageCreditEnhanced">Use average monthly credit commitments (£150)</label>
+      </div>
+      <label for="creditCommitmentsEnhanced">Monthly Credit Commitments (£):</label>
+      <input type="number" id="creditCommitmentsEnhanced" value="150" min="0">
+      <button onclick="calculateEnhanced()">Calculate Enhanced Disposable Income</button>
+      <p class="result" id="enhancedResult"></p>
+    </div>
   </div>
 
   <!-- RENTAL INCREASE TAB -->
@@ -564,7 +611,7 @@
       subTabCouncil.classList.add('active');
     });
 
-    // ====== RENT AFFORDABILITY CALCULATOR ======
+    // ====== RENT AFFORDABILITY CALCULATOR (Standard) ======
     document.getElementById('rent').addEventListener('input', calculateIncome);
 
     const incomeText = document.getElementById('income');
@@ -763,7 +810,8 @@
       const marketDiffPercent = (difference / currentRent) * 100;
 
       if (marketDiffPercent <= 6) {
-        resultDiv.innerHTML = `\n          <p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>\n          <p><em>No increase allowed (≤ 6%). Refer to legislation.</em></p>\n        `;
+        resultDiv.innerHTML = `<p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>
+          <p><em>No increase allowed (≤ 6%). Refer to legislation.</em></p>`;
         return;
       }
 
@@ -775,10 +823,13 @@
 
       let capNote = '';
       if (marketDiffPercent > 24) {
-        capNote = `\n          <p style="color: #d00;">\n            (Original difference was ${marketDiffPercent.toFixed(2)}%, capped at 24%.)\n          </p>\n        `;
+        capNote = `<p style="color: #d00;">(Original difference was ${marketDiffPercent.toFixed(2)}%, capped at 24%.)</p>`;
       }
 
-      resultDiv.innerHTML = `\n        <p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>\n        ${capNote}\n        <p><strong>New Rent (rounded down):</strong> £${newRent.toFixed(2)}</p>\n        <p><strong>Increase Amount:</strong> £${increaseAmount.toFixed(2)}</p>\n      `;
+      resultDiv.innerHTML = `<p><strong>Market Difference:</strong> ${marketDiffPercent.toFixed(2)}%</p>
+        ${capNote}
+        <p><strong>New Rent (rounded down):</strong> £${newRent.toFixed(2)}</p>
+        <p><strong>Increase Amount:</strong> £${increaseAmount.toFixed(2)}</p>`;
 
       chart.style.display = 'block';
       drawRentIncreaseChart(currentRent, openMarketRent, newRent);
@@ -883,11 +934,16 @@
       if (combineCouncilTax) {
         const combinedAnnual = totalAnnual + councilTaxAnnual;
         const combinedMonthly = combinedAnnual / 12;
-        combinedText = `\n          <br><strong>Combined with Council Tax:</strong><br>\n          Combined Monthly: £${combinedMonthly.toFixed(2)}<br>\n          Combined Annual: £${combinedAnnual.toFixed(2)}\n        `;
+        combinedText = `<br><strong>Combined with Council Tax:</strong><br>
+          Combined Monthly: £${combinedMonthly.toFixed(2)}<br>
+          Combined Annual: £${combinedAnnual.toFixed(2)}`;
       }
 
       utilityResult.style.color = "green";
-      utilityResult.innerHTML = `\n        <strong>Energy cost per month:</strong> £${displayMonthly.toFixed(2)}<br>\n        <strong>Energy cost per year:</strong> £${totalAnnual.toFixed(2)}<br>\n        ${combinedText}\n        <br><em>The results provided by this calculator are estimations only. Actual figures may vary.</em>\n      `;
+      utilityResult.innerHTML = `<strong>Energy cost per month:</strong> £${displayMonthly.toFixed(2)}<br>
+        <strong>Energy cost per year:</strong> £${totalAnnual.toFixed(2)}<br>
+        ${combinedText}<br>
+        <br><em>The results provided by this calculator are estimations only. Actual figures may vary.</em>`;
     }
 
     function updateCouncilTax() {
@@ -903,7 +959,9 @@
 
       const monthly = councilTaxAnnual / 12;
       councilTaxResult.style.color = "green";
-      councilTaxResult.innerHTML = `\n        <strong>Band ${band} Annual:</strong> £${councilTaxAnnual.toFixed(2)}<br>\n        <strong>Monthly (approx):</strong> £${monthly.toFixed(2)}<br>\n        <em>(Water & Sewerage included in total)</em>\n      `;
+      councilTaxResult.innerHTML = `<strong>Band ${band} Annual:</strong> £${councilTaxAnnual.toFixed(2)}<br>
+        <strong>Monthly (approx):</strong> £${monthly.toFixed(2)}<br>
+        <em>(Water & Sewerage included in total)</em>`;
     }
 
     // ====== PRO-RATA RENT CALCULATOR ======
@@ -938,6 +996,73 @@
       resultEl.style.color = 'green';
     }
 
+    // ====== ENHANCED RENT AFFORDABILITY CALCULATOR ======
+    function calculateNetAnnual(gross) {
+      const personalAllowance = 12570;
+      let taxableIncome = Math.max(0, gross - personalAllowance);
+      let tax = 0;
+      const starterBand = Math.min(taxableIncome, 2162);
+      tax += starterBand * 0.19;
+      taxableIncome -= starterBand;
+      tax += taxableIncome * 0.20;
+      const monthlyGross = gross / 12;
+      const nicMonthly = Math.max(0, monthlyGross - 967) * 0.12;
+      const nicAnnual = nicMonthly * 12;
+      return gross - tax - nicAnnual;
+    }
+
+    document.getElementById("useAverageCreditEnhanced").addEventListener("change", function() {
+      const creditInput = document.getElementById("creditCommitmentsEnhanced");
+      if (this.checked) {
+        creditInput.value = 150;
+        creditInput.disabled = true;
+      } else {
+        creditInput.disabled = false;
+      }
+    });
+
+    function calculateEnhanced() {
+      const grossIncome = parseFloat(document.getElementById("grossIncomeEnhanced").value) || 0;
+      const ehePercentage = parseFloat(document.getElementById("ehePercentageEnhanced").value) || 0;
+      const creditCommitments = parseFloat(document.getElementById("creditCommitmentsEnhanced").value) || 0;
+
+      const netAnnualIncome = calculateNetAnnual(grossIncome);
+      const monthlyNetIncome = netAnnualIncome / 12;
+      const monthlyEHE = monthlyNetIncome * (ehePercentage / 100);
+      const disposableMonthly = monthlyNetIncome - monthlyEHE - creditCommitments;
+
+      const resultEl = document.getElementById("enhancedResult");
+      resultEl.innerHTML = `
+        <strong>Results:</strong><br>
+        Annual Net Income: £${netAnnualIncome.toFixed(2)}<br>
+        Monthly Net Income: £${monthlyNetIncome.toFixed(2)}<br>
+        Monthly Essential Household Expenditure (${ehePercentage}%): £${monthlyEHE.toFixed(2)}<br>
+        Monthly Credit Commitments: £${creditCommitments.toFixed(2)}<br>
+        <hr>
+        <strong>Monthly Disposable Income: £${disposableMonthly.toFixed(2)}</strong>
+      `;
+    }
+
+    // Sub-tab toggling within Rent Affordability
+    const subTabStandard = document.getElementById('subTabStandard');
+    const subTabEnhanced = document.getElementById('subTabEnhanced');
+    const standardRentAffordability = document.getElementById('standardRentAffordability');
+    const enhancedRentAffordability = document.getElementById('enhancedRentAffordability');
+
+    subTabStandard.addEventListener('click', () => {
+      subTabStandard.classList.add('active');
+      subTabEnhanced.classList.remove('active');
+      standardRentAffordability.style.display = 'block';
+      enhancedRentAffordability.style.display = 'none';
+    });
+
+    subTabEnhanced.addEventListener('click', () => {
+      subTabEnhanced.classList.add('active');
+      subTabStandard.classList.remove('active');
+      standardRentAffordability.style.display = 'none';
+      enhancedRentAffordability.style.display = 'block';
+    });
+
     // ====== SECRET GAME CODE (Circle + Timed Word) ======
     const secretButton = document.getElementById('secretButton');
     const gameContainer = document.getElementById('gameContainer');
@@ -967,27 +1092,22 @@
     const wordGameMessage = document.getElementById('wordGameMessage');
     const timerContainer = document.getElementById('timerContainer');
     const timerBar = document.getElementById('timerBar');
-    const timeLeftDisplay = document.getElementById('timeLeftDisplay'); // optional if we want to display time
-    const wordsSolvedDisplay = document.createElement('span');
-    let wordScore = 0;
-    let wordTimer;
-    let timeLeft = 30;
-
-    // We'll create a new element for the scoreboard
-    const scoreboardP = document.getElementById('wordScore'); // already in HTML
+    const timeLeftDisplay = document.getElementById('timeLeftDisplay');
+    const scoreboardP = document.getElementById('wordScore');
     scoreboardP.style.display = 'none';
 
     const WORD_POOL = [
-  "ABOUND", "ACROSS", "ACTION", "ADVENT", "ALIENS", "ALMOND", "ANIMAL", "ARTIST", "ASTRAL", "ATOMIC",
-  "AURORA", "BATTLE", "BEACHY", "BEEFED", "BEFORE", "BREEZE", "BRIGHT", "BRUNCH", "CANARY", "CANVAS",
-  "CANYON", "CASTLE", "CERISE", "CHARCOAL", "CINEMA", "CLASSY", "CLICKS", "CLOWNS", "COFFEE", "COSMIC",
-  "CREATE", "CRISPY", "CROWN", "DAMAGE", "DEARTH", "DESIGN", "DETAIL", "DEVICE", "DINOSAUR", "DOUBLE",
-  "DRAGON", "EASTER", "ECHOES", "EERIE", "ENERGY", "ENTITY", "EXOTIC", "FAITH", "FAJITA", "FISHER",
-  "FLAUNT", "FLOAT", "FLUFFY", "FRIGHT", "FROSTY", "GALAXY", "GATHER", "GEEKS", "GLANCE", "GRAVITY",
-  "HANDLE", "HATCH", "HEALTH", "HEROIC", "HIDDEN", "HONEY", "HUMBLE", "HUNTER", "ICEBERG", "INSIST",
-  "JIGSAW", "JUMBLE", "KARATE", "KITTEN", "LAGOON", "LAUNCH", "LITTLE", "MAGNET", "MAKING", "MARBLE",
-  "MEADOW", "MOCKUP", "MOTION", "NARROW", "NOISY", "ORCHID", "ORIGIN", "OUTAGE", "PLANET", "POETIC",
-  "POLAR", "PRINCE", "PURPLE", "RANDOM", "REWARD", "SALMON", "STREAM", "THRONE", "TRAVEL", "WINTER"];
+      "ABOUND", "ACROSS", "ACTION", "ADVENT", "ALIENS", "ALMOND", "ANIMAL", "ARTIST", "ASTRAL", "ATOMIC",
+      "AURORA", "BATTLE", "BEACHY", "BEEFED", "BEFORE", "BREEZE", "BRIGHT", "BRUNCH", "CANARY", "CANVAS",
+      "CANYON", "CASTLE", "CERISE", "CHARCOAL", "CINEMA", "CLASSY", "CLICKS", "CLOWNS", "COFFEE", "COSMIC",
+      "CREATE", "CRISPY", "CROWN", "DAMAGE", "DEARTH", "DESIGN", "DETAIL", "DEVICE", "DINOSAUR", "DOUBLE",
+      "DRAGON", "EASTER", "ECHOES", "EERIE", "ENERGY", "ENTITY", "EXOTIC", "FAITH", "FAJITA", "FISHER",
+      "FLAUNT", "FLOAT", "FLUFFY", "FRIGHT", "FROSTY", "GALAXY", "GATHER", "GEEKS", "GLANCE", "GRAVITY",
+      "HANDLE", "HATCH", "HEALTH", "HEROIC", "HIDDEN", "HONEY", "HUMBLE", "HUNTER", "ICEBERG", "INSIST",
+      "JIGSAW", "JUMBLE", "KARATE", "KITTEN", "LAGOON", "LAUNCH", "LITTLE", "MAGNET", "MAKING", "MARBLE",
+      "MEADOW", "MOCKUP", "MOTION", "NARROW", "NOISY", "ORCHID", "ORIGIN", "OUTAGE", "PLANET", "POETIC",
+      "POLAR", "PRINCE", "PURPLE", "RANDOM", "REWARD", "SALMON", "STREAM", "THRONE", "TRAVEL", "WINTER"
+    ];
 
     let scrambleAnswer = "";
     let isCircleGameActive = true;
@@ -1005,7 +1125,6 @@
 
     gameSwitcherBtn.addEventListener('click', () => {
       if (isCircleGameActive) {
-        // Switch to Word Game
         circleClickGame.style.display = 'none';
         wordGameDiv.style.display = 'block';
         gameTitle.textContent = "Word Shuffle (Timed)";
@@ -1014,7 +1133,6 @@
         clearInterval(circleInterval);
         setupWordGame();
       } else {
-        // Switch back to Circle Game
         circleClickGame.style.display = 'block';
         wordGameDiv.style.display = 'none';
         gameTitle.textContent = "Secret Game: Click the Circle!";
@@ -1081,30 +1199,26 @@
 
     // ============== Timed Word Game ==============
     let wordsSolved = 0;
+    let wordTimer;
+    let timeLeft = 30;
 
     function setupWordGame() {
-      // Reset puzzle
       scrambleWordElement.textContent = "";
       guessInput.value = "";
       wordGameMessage.textContent = "";
-
-      // Show scoreboard + timer bar
       scoreboardP.style.display = "block";
       scoreboardP.innerHTML = `Words Solved: <span id="wordsSolved">${wordsSolved}</span>`;
       timerContainer.style.display = "block";
 
-      // pick a random word
       let idx = Math.floor(Math.random() * WORD_POOL.length);
       scrambleAnswer = WORD_POOL[idx];
 
-      // scramble it
       let scrambled = scrambleAnswer.split("");
       for (let i = scrambled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [scrambled[i], scrambled[j]] = [scrambled[j], scrambled[i]];
       }
       scrambleWordElement.textContent = scrambled.join(" ");
-
       timeLeft = 30;
       updateWordTimerUI();
       startWordTimer();
@@ -1128,8 +1242,6 @@
     }
 
     function updateWordTimerUI() {
-      // if you want to display the numeric countdown:
-      // timeLeftDisplay.textContent = timeLeft;
       let wPercent = (timeLeft / 30) * 100;
       timerBar.style.width = wPercent + "%";
       timerBar.style.backgroundColor = wPercent < 30 ? "red" : "green";
@@ -1160,11 +1272,9 @@
         wordGameMessage.textContent = `Correct! The word was ${scrambleAnswer}`;
         wordsSolved++;
         scoreboardP.innerHTML = `Words Solved: <span id="wordsSolved">${wordsSolved}</span>`;
-        // add extra time
         timeLeft += 5;
-        if (timeLeft > 30) timeLeft = 30; // optional cap
+        if (timeLeft > 30) timeLeft = 30;
         updateWordTimerUI();
-        // new puzzle
         setTimeout(() => {
           setupWordGame();
         }, 1000);
