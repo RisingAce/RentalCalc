@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rettie Multi-Calculator + Fun Word Game</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -32,12 +32,7 @@
       border: none;
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
       background: #fff;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
     }
     .btn-primary {
       background-color: var(--heritage-green);
@@ -49,16 +44,10 @@
     }
     .nav-tabs .nav-link {
       color: var(--slate);
-      transition: all 0.2s ease;
     }
     .nav-tabs .nav-link.active {
       background-color: var(--heritage-green);
       color: #fff;
-      border-color: var(--heritage-green);
-    }
-    .form-control:focus {
-      border-color: var(--moss);
-      box-shadow: 0 0 0 0.2rem rgba(92, 127, 113, 0.25);
     }
     .result {
       font-size: 1.1em;
@@ -66,9 +55,6 @@
       text-align: center;
       margin-top: 15px;
       color: var(--brick);
-    }
-    h1, h2 {
-      color: var(--heritage-green);
     }
     /* Dark Mode */
     .dark-mode {
@@ -81,21 +67,17 @@
     .dark-mode .result {
       color: #ff6f61;
     }
-    .dark-mode .nav-tabs .nav-link {
-      color: #e0e0e0;
-    }
     /* Tab Transition */
     .tab-content > .tab-pane {
-      transition: opacity 0.3s ease;
-    }
-    .tab-content > .tab-pane:not(.active) {
-      opacity: 0;
-      position: absolute;
-      width: 100%;
+      display: none;
     }
     .tab-content > .active {
-      opacity: 1;
-      position: relative;
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
   </style>
 </head>
@@ -103,17 +85,33 @@
   <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="text-center flex-grow-1">Rettie Multi-Calculator</h1>
-      <button class="btn btn-outline-secondary" onclick="toggleDarkMode()">
+      <button class="btn btn-outline-secondary" id="toggleDarkMode">
         <i class="fas fa-moon"></i> Toggle Dark Mode
       </button>
     </div>
 
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs justify-content-center mb-4" id="mainTab" role="tablist">
-      <li class="nav-item"><button class="nav-link active" id="affordability-tab" data-bs-toggle="tab" data-bs-target="#affordability" type="button" role="tab"><i class="fas fa-home"></i> Affordability</button></li>
-      <li class="nav-item"><button class="nav-link" id="increase-tab" data-bs-toggle="tab" data-bs-target="#increase" type="button" role="tab"><i class="fas fa-arrow-up"></i> Increase</button></li>
-      <li class="nav-item"><button class="nav-link" id="bills-tab" data-bs-toggle="tab" data-bs-target="#bills" type="button" role="tab"><i class="fas fa-file-invoice"></i> Bills</button></li>
-      <li class="nav-item"><button class="nav-link" id="prorata-tab" data-bs-toggle="tab" data-bs-target="#prorata" type="button" role="tab"><i class="fas fa-calendar-alt"></i> Pro-Rata</button></li>
+      <li class="nav-item">
+        <a class="nav-link active" id="affordability-tab" data-bs-toggle="tab" data-bs-target="#affordability" href="#affordability" role="tab">
+          <i class="fas fa-home"></i> Affordability
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="increase-tab" data-bs-toggle="tab" data-bs-target="#increase" href="#increase" role="tab">
+          <i class="fas fa-arrow-up"></i> Increase
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="bills-tab" data-bs-toggle="tab" data-bs-target="#bills" href="#bills" role="tab">
+          <i class="fas fa-file-invoice"></i> Bills
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="prorata-tab" data-bs-toggle="tab" data-bs-target="#prorata" href="#prorata" role="tab">
+          <i class="fas fa-calendar-alt"></i> Pro-Rata
+        </a>
+      </li>
     </ul>
 
     <div class="tab-content" id="mainTabContent">
@@ -122,33 +120,27 @@
         <div class="card p-4">
           <h2>Rent Affordability</h2>
           <ul class="nav nav-tabs" id="affordabilitySubTab" role="tablist">
-            <li class="nav-item"><button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard" type="button" role="tab">Standard</button></li>
-            <li class="nav-item"><button class="nav-link" id="enhanced-tab" data-bs-toggle="tab" data-bs-target="#enhanced" type="button" role="tab">Enhanced</button></li>
+            <li class="nav-item">
+              <a class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard" href="#standard" role="tab">Standard</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="enhanced-tab" data-bs-toggle="tab" data-bs-target="#enhanced" href="#enhanced" role="tab">Enhanced</a>
+            </li>
           </ul>
           <div class="tab-content" id="affordabilitySubTabContent">
             <!-- Standard -->
             <div class="tab-pane fade show active" id="standard" role="tabpanel">
               <div class="mb-3">
                 <label for="rent" class="form-label">Monthly Rent (£)</label>
-                <input type="number" class="form-control" id="rent" placeholder="e.g. 900" data-bs-toggle="tooltip" title="Enter your monthly rent">
+                <input type="number" class="form-control" id="rent" placeholder="e.g. 900">
               </div>
               <div class="mb-3">
                 <label for="income" class="form-label">Annual Income (£)</label>
-                <input type="number" class="form-control" id="income" placeholder="e.g. 30000" data-bs-toggle="tooltip" title="Your annual gross income before tax">
-              </div>
-              <div class="mb-3">
-                <label for="incomeSlider" class="form-label">Adjust Income (nearest £100)</label>
-                <input type="range" class="form-range" id="incomeSlider" min="0" max="300000" step="100" value="0">
+                <input type="number" class="form-control" id="income" placeholder="e.g. 30000">
               </div>
               <button class="btn btn-primary" onclick="calculateIncome()">Calculate</button>
               <div id="affordabilityResult" class="result"></div>
               <canvas id="affordabilityChart" class="mt-3" height="200"></canvas>
-              <ul id="affordabilityOutputs" class="list-group mt-3"></ul>
-              <div class="mt-3">
-                <button class="btn btn-outline-secondary" onclick="saveCalculation('affordability')">Save</button>
-                <button class="btn btn-outline-secondary" onclick="loadCalculation('affordability')">Load</button>
-                <button class="btn btn-outline-secondary" onclick="shareCalculation('affordability')">Share</button>
-              </div>
             </div>
             <!-- Enhanced -->
             <div class="tab-pane fade" id="enhanced" role="tabpanel">
@@ -159,14 +151,6 @@
               <div class="mb-3">
                 <label for="ehePercentageEnhanced" class="form-label">Essential Expenditure (%)</label>
                 <input type="number" class="form-control" id="ehePercentageEnhanced" value="20" min="0" max="100">
-              </div>
-              <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="useAverageCreditEnhanced" checked>
-                <label class="form-check-label" for="useAverageCreditEnhanced">Use average credit (£150)</label>
-              </div>
-              <div class="mb-3">
-                <label for="creditCommitmentsEnhanced" class="form-label">Monthly Credit (£)</label>
-                <input type="number" class="form-control" id="creditCommitmentsEnhanced" value="150" disabled>
               </div>
               <button class="btn btn-primary" onclick="calculateEnhanced()">Calculate</button>
               <div id="enhancedResult" class="result"></div>
@@ -198,8 +182,12 @@
         <div class="card p-4">
           <h2>Bills Calculator</h2>
           <ul class="nav nav-tabs" id="billsSubTab" role="tablist">
-            <li class="nav-item"><button class="nav-link active" id="energy-tab" data-bs-toggle="tab" data-bs-target="#energy" type="button" role="tab">Energy</button></li>
-            <li class="nav-item"><button class="nav-link" id="council-tab" data-bs-toggle="tab" data-bs-target="#council" type="button" role="tab">Council Tax</button></li>
+            <li class="nav-item">
+              <a class="nav-link active" id="energy-tab" data-bs-toggle="tab" data-bs-target="#energy" href="#energy" role="tab">Energy</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="council-tab" data-bs-toggle="tab" data-bs-target="#council" href="#council" role="tab">Council Tax</a>
+            </li>
           </ul>
           <div class="tab-content" id="billsSubTabContent">
             <!-- Energy -->
@@ -212,16 +200,6 @@
                   <option value="4-5">4-5 people</option>
                 </select>
               </div>
-              <div class="mb-3">
-                <label for="region" class="form-label">Region</label>
-                <select class="form-select" id="region">
-                  <option value="southern_scotland" selected>Southern Scotland</option>
-                </select>
-              </div>
-              <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="combineCouncilTaxToggle">
-                <label class="form-check-label" for="combineCouncilTaxToggle">Include Council Tax?</label>
-              </div>
               <button class="btn btn-primary" onclick="calculateUtilityBill()">Calculate</button>
               <div id="utilityResult" class="result"></div>
             </div>
@@ -231,16 +209,11 @@
                 <label for="councilBand" class="form-label">Council Tax Band</label>
                 <select class="form-select" id="councilBand">
                   <option value="A">Band A</option>
-                  <option value="B">Band B</option>
-                  <option value="C">Band C</option>
                   <option value="D" selected>Band D</option>
-                  <option value="E">Band E</option>
-                  <option value="F">Band F</option>
-                  <option value="G">Band G</option>
                   <option value="H">Band H</option>
                 </select>
               </div>
-              <button class="btn btn-primary" onclick="updateCouncilTax()">Show</button>
+              <button class="btn btn-primary" onclick="updateCouncilTax()">Calculate</button>
               <div id="councilTaxResult" class="result"></div>
             </div>
           </div>
@@ -263,397 +236,120 @@
             <label for="endDateProRata" class="form-label">End Date</label>
             <input type="date" class="form-control" id="endDateProRata">
           </div>
-          <button class="btn btn-primary" onclick="calculateProRata()">Calculate</button>
+          <button class("btn btn-primary" onclick="calculateProRata()">Calculate</button>
           <div id="proRataResult" class="result"></div>
         </div>
-      </div>
-    </div>
-
-    <!-- Saved Calculations -->
-    <div class="card p-4 mt-4">
-      <h3>Saved Calculations</h3>
-      <ul id="savedCalculationsList" class="list-group"></ul>
-      <button class="btn btn-danger mt-3" onclick="resetSavedCalculations()">Reset Saved Calculations</button>
-    </div>
-
-    <!-- Secret Games Button -->
-    <button id="secretButton" class="btn btn-danger position-fixed bottom-0 end-0 m-3" style="border-radius: 50%; width: 44px; height: 44px; opacity: 0.6;">?</button>
-    <div id="gameContainer" class="d-none position-fixed top-0 start-0 w-100 h-100" style="background: rgba(0,0,0,0.8);">
-      <div class="game-content m-3 p-3 bg-light rounded text-dark">
-        <h2 id="gameTitle">Secret Game: Click the Circle!</h2>
-        <div id="circleClickGame">
-          <p>Score: <span id="gameScore">0</span> | Time Left: <span id="gameTimer">10</span>s</p>
-          <canvas id="gameCanvas" width="400" height="300" class="border border-dark bg-light"></canvas>
-          <br/>
-          <button id="playAgainButton" class="btn btn-secondary mt-2" style="display:none;">Play Again</button>
-          <button id="closeGameButton" class="btn btn-danger mt-2">Close Game</button>
-        </div>
-        <div id="wordGame" style="display:none;">
-          <h3>Word Shuffle</h3>
-          <div id="timerContainer" class="bg-secondary" style="height: 20px; border-radius: 4px; overflow: hidden;">
-            <div id="timerBar" style="height: 100%; background: green; width: 100%;"></div>
-          </div>
-          <p id="wordScore">Words Solved: <span id="wordsSolved">0</span></p>
-          <p id="scrambleWord"></p>
-          <input type="text" class="form-control" id="guessInput" placeholder="Your guess" maxlength="12" style="width:200px; margin: 0 auto;" />
-          <br/>
-          <button id="submitGuess" class="btn btn-primary">Submit</button>
-          <button id="hintButton" class="btn btn-secondary btn-sm">Hint</button>
-          <p id="wordGameMessage"></p>
-        </div>
-        <button id="gameSwitcher" class="btn btn-info mt-3">Switch to Word Game</button>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-      tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
-
-      // Theme Toggle
-      function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-      }
-      if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
-
-      // Rent Affordability
-      const rentInput = document.getElementById('rent');
-      const incomeInput = document.getElementById('income');
-      const incomeSlider = document.getElementById('incomeSlider');
-      const affordabilityResult = document.getElementById('affordabilityResult');
-      const affordabilityOutputs = document.getElementById('affordabilityOutputs');
-      let affordabilityChart;
-
-      incomeInput.addEventListener('input', () => {
-        const value = parseFloat(incomeInput.value);
-        if (!isNaN(value)) incomeSlider.value = Math.round(value / 100) * 100;
-        calculateIncome();
-      });
-      incomeSlider.addEventListener('input', () => {
-        const sliderValue = Math.round(parseFloat(incomeSlider.value) / 100) * 100;
-        incomeInput.value = sliderValue;
-        calculateIncome();
-      });
-      rentInput.addEventListener('input', calculateIncome);
-
-      function calculateIncome() {
-        const rent = parseFloat(rentInput.value);
-        const income = parseFloat(incomeInput.value);
-        if (isNaN(rent) || isNaN(income) || rent <= 0 || income < 0) {
-          affordabilityResult.textContent = 'Please enter valid numbers.';
-          affordabilityOutputs.innerHTML = '';
-          if (affordabilityChart) affordabilityChart.destroy();
-          return;
-        }
-        const tenantIncomeRequired = rent * 30;
-        const guarantorIncomeRequired = rent * 36;
-        const maxValue = Math.max(tenantIncomeRequired, guarantorIncomeRequired, income) * 1.2;
-
-        affordabilityResult.textContent = `Affordability: ${income >= tenantIncomeRequired ? 'Affordable' : 'Not Affordable'}`;
-
-        affordabilityOutputs.innerHTML = `
-          <li class="list-group-item">Tenant Required Income: £${tenantIncomeRequired.toFixed(2)}</li>
-          <li class="list-group-item">Guarantor Required Income: £${guarantorIncomeRequired.toFixed(2)}</li>
-          <li class="list-group-item">Your Income: £${income.toFixed(2)}</li>
-        `;
-
-        if (!affordabilityChart) {
-          affordabilityChart = new Chart(document.getElementById('affordabilityChart'), {
-            type: 'bar',
-            data: {
-              labels: ['Tenant Required', 'Guarantor Required', 'Your Income'],
-              datasets: [{
-                label: 'Income (£)',
-                data: [tenantIncomeRequired, guarantorIncomeRequired, income],
-                backgroundColor: ['#004953', '#5c7f71', '#91301a']
-              }]
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: maxValue
-                }
-              },
-              plugins: {
-                annotation: {
-                  annotations: [{
-                    type: 'line',
-                    yMin: tenantIncomeRequired,
-                    yMax: tenantIncomeRequired,
-                    borderColor: 'orange',
-                    borderWidth: 2,
-                    label: {
-                      content: 'Affordability Threshold',
-                      enabled: true,
-                      position: 'start',
-                      backgroundColor: 'rgba(255, 165, 0, 0.7)'
-                    }
-                  }]
-                }
-              }
-            }
-          });
-        } else {
-          affordabilityChart.data.datasets[0].data = [tenantIncomeRequired, guarantorIncomeRequired, income];
-          affordabilityChart.options.scales.y.max = maxValue;
-          affordabilityChart.options.plugins.annotation.annotations[0].yMin = tenantIncomeRequired;
-          affordabilityChart.options.plugins.annotation.annotations[0].yMax = tenantIncomeRequired;
-          affordabilityChart.update();
-        }
-      }
-
-      // Enhanced Affordability
-      document.getElementById('useAverageCreditEnhanced').addEventListener('change', function() {
-        const creditInput = document.getElementById('creditCommitmentsEnhanced');
-        creditInput.disabled = this.checked;
-        creditInput.value = this.checked ? 150 : '';
-      });
-
-      function calculateEnhanced() {
-        const income = parseFloat(document.getElementById('grossIncomeEnhanced').value);
-        const ehePercentage = parseFloat(document.getElementById('ehePercentageEnhanced').value);
-        const credit = parseFloat(document.getElementById('creditCommitmentsEnhanced').value);
-        if (isNaN(income) || isNaN(ehePercentage) || isNaN(credit) || income < 0 || ehePercentage < 0 || credit < 0) {
-          document.getElementById('enhancedResult').textContent = 'Please enter valid numbers.';
-          return;
-        }
-        const netIncome = income * 0.75; // Simplified tax calculation
-        const monthlyNet = netIncome / 12;
-        const ehe = monthlyNet * (ehePercentage / 100);
-        const disposable = monthlyNet - ehe - credit;
-        document.getElementById('enhancedResult').textContent = `Disposable Income: £${disposable.toFixed(2)} per month`;
-      }
-
-      // Rental Increase
-      function calculateIncrease() {
-        const currentRent = parseFloat(document.getElementById('currentRent').value);
-        const marketRent = parseFloat(document.getElementById('marketRent').value);
-        if (isNaN(currentRent) || isNaN(marketRent) || currentRent <= 0 || marketRent <= 0) {
-          document.getElementById('increaseResult').textContent = 'Please enter valid numbers.';
-          return;
-        }
-        const diffFraction = (marketRent - currentRent) / currentRent;
-        const increasePercentage = diffFraction <= 0.06 ? diffFraction : 0.06 + (Math.min(0.24, diffFraction - 0.06) * 0.33);
-        const newRent = currentRent * (1 + increasePercentage);
-        document.getElementById('increaseResult').textContent = `New Rent: £${newRent.toFixed(2)} (Increase: ${(increasePercentage * 100).toFixed(1)}%)`;
-
-        new Chart(document.getElementById('increaseChart'), {
-          type: 'bar',
-          data: {
-            labels: ['Current Rent', 'Market Rent', 'Allowed Rent'],
-            datasets: [{
-              label: 'Rent (£)',
-              data: [currentRent, marketRent, newRent],
-              backgroundColor: ['#004953', '#5c7f71', '#91301a']
-            }]
-          },
-          options: { scales: { y: { beginAtZero: true } } }
-        });
-      }
-
-      // Bills Calculator
-      function calculateUtilityBill() {
-        const householdSize = document.getElementById('householdSize').value;
-        const includeCouncilTax = document.getElementById('combineCouncilTaxToggle').checked;
-        const rates = { '1-2': 100, '2-3': 150, '4-5': 200 }; // Simplified rates
-        let energyCost = rates[householdSize] || 0;
-        if (includeCouncilTax) energyCost += 100; // Simplified council tax
-        document.getElementById('utilityResult').textContent = `Estimated Monthly Cost: £${energyCost.toFixed(2)}`;
-      }
-
-      function updateCouncilTax() {
-        const band = document.getElementById('councilBand').value;
-        const councilTaxRates = { 'A': 1200, 'B': 1400, 'C': 1600, 'D': 1800, 'E': 2200, 'F': 2600, 'G': 3000, 'H': 3600 };
-        document.getElementById('councilTaxResult').textContent = `Annual Council Tax: £${councilTaxRates[band] || 0}`;
-      }
-
-      // Pro-Rata Rent
-      function calculateProRata() {
-        const rent = parseFloat(document.getElementById('monthlyProRataRent').value);
-        const start = new Date(document.getElementById('startDateProRata').value);
-        const end = new Date(document.getElementById('endDateProRata').value);
-        if (isNaN(rent) || !start || !end || rent <= 0 || end <= start) {
-          document.getElementById('proRataResult').textContent = 'Invalid inputs.';
-          return;
-        }
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const dailyRent = rent / 30;
-        document.getElementById('proRataResult').textContent = `Rent Due: £${(dailyRent * days).toFixed(2)}`;
-      }
-
-      // Save/Load/Share Functionality
-      function saveCalculation(section) {
-        const result = document.getElementById(`${section}Result`).textContent;
-        let savedCalculations = JSON.parse(localStorage.getItem('savedCalculations')) || [];
-        savedCalculations.push({ section, result, date: new Date().toLocaleString() });
-        localStorage.setItem('savedCalculations', JSON.stringify(savedCalculations));
-        displaySavedCalculations();
-      }
-
-      function loadCalculation(section) {
-        const savedCalculations = JSON.parse(localStorage.getItem('savedCalculations')) || [];
-        const lastCalculation = savedCalculations.filter(calc => calc.section === section).pop();
-        if (lastCalculation) {
-          document.getElementById(`${section}Result`).textContent = lastCalculation.result;
-        } else {
-          alert('No saved calculation found for this section.');
-        }
-      }
-
-      function shareCalculation(section) {
-        const result = document.getElementById(`${section}Result`).textContent;
-        navigator.clipboard.writeText(result).then(() => alert('Result copied to clipboard!'));
-      }
-
-      function displaySavedCalculations() {
-        const savedCalculations = JSON.parse(localStorage.getItem('savedCalculations')) || [];
-        const list = document.getElementById('savedCalculationsList');
-        list.innerHTML = '';
-        savedCalculations.forEach((calc, index) => {
-          const listItem = document.createElement('li');
-          listItem.classList.add('list-group-item');
-          listItem.textContent = `${calc.section}: ${calc.result} (Saved on: ${calc.date})`;
-          list.appendChild(listItem);
-        });
-      }
-
-      function resetSavedCalculations() {
-        localStorage.removeItem('savedCalculations');
-        displaySavedCalculations();
-      }
-
-      // Initial display of saved calculations
-      displaySavedCalculations();
-
-      // Secret Games
-      const gameContainer = document.getElementById('gameContainer');
-      const circleClickGame = document.getElementById('circleClickGame');
-      const wordGame = document.getElementById('wordGame');
-      const gameCanvas = document.getElementById('gameCanvas');
-      const gameCtx = gameCanvas.getContext('2d');
-      let gameInterval, gameScore = 0, gameTimeLeft = 10;
-
-      document.getElementById('secretButton').addEventListener('click', () => {
-        gameContainer.classList.remove('d-none');
-        startCircleGame();
-      });
-
-      document.getElementById('closeGameButton').addEventListener('click', () => {
-        gameContainer.classList.add('d-none');
-        clearInterval(gameInterval);
-      });
-
-      document.getElementById('gameSwitcher').addEventListener('click', () => {
-        clearInterval(gameInterval);
-        if (circleClickGame.style.display !== 'none') {
-          circleClickGame.style.display = 'none';
-          wordGame.style.display = 'block';
-          document.getElementById('gameTitle').textContent = 'Word Shuffle';
-          document.getElementById('gameSwitcher').textContent = 'Switch to Circle Game';
-          setupWordGame();
-        } else {
-          wordGame.style.display = 'none';
-          circleClickGame.style.display = 'block';
-          document.getElementById('gameTitle').textContent = 'Click the Circle!';
-          document.getElementById('gameSwitcher').textContent = 'Switch to Word Game';
-          startCircleGame();
-        }
-      });
-
-      function startCircleGame() {
-        gameScore = 0;
-        gameTimeLeft = 10;
-        document.getElementById('gameScore').textContent = gameScore;
-        document.getElementById('gameTimer').textContent = gameTimeLeft;
-        document.getElementById('playAgainButton').style.display = 'none';
-        let circleX, circleY, circleRadius = 20;
-        function drawCircle() {
-          gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-          circleX = Math.random() * (gameCanvas.width - 2 * circleRadius) + circleRadius;
-          circleY = Math.random() * (gameCanvas.height - 2 * circleRadius) + circleRadius;
-          gameCtx.beginPath();
-          gameCtx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
-          gameCtx.fillStyle = '#007BFF';
-          gameCtx.fill();
-        }
-        drawCircle();
-        gameCanvas.onclick = (e) => {
-          const rect = gameCanvas.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const clickY = e.clientY - rect.top;
-          const dist = Math.sqrt((clickX - circleX) ** 2 + (clickY - circleY) ** 2);
-          if (dist <= circleRadius) {
-            gameScore++;
-            document.getElementById('gameScore').textContent = gameScore;
-            drawCircle();
-            const oscillator = audioCtx.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-            oscillator.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.1);
-          }
-        };
-        gameInterval = setInterval(() => {
-          gameTimeLeft--;
-          document.getElementById('gameTimer').textContent = gameTimeLeft;
-          if (gameTimeLeft <= 0) {
-            clearInterval(gameInterval);
-            gameCanvas.onclick = null;
-            document.getElementById('playAgainButton').style.display = 'inline-block';
-          }
-        }, 1000);
-        document.getElementById('playAgainButton').onclick = startCircleGame;
-      }
-
-      function setupWordGame() {
-        clearInterval(gameInterval);
-        const words = ['rent', 'house', 'bills', 'lease', 'tenant'];
-        const scrambleAnswer = words[Math.floor(Math.random() * words.length)];
-        let revealed = new Array(scrambleAnswer.length).fill(false);
-        let hintsUsed = 0;
-        const scrambled = scrambleAnswer.split('').sort(() => Math.random() - 0.5).join('');
-        document.getElementById('scrambleWord').textContent = scrambled;
-        document.getElementById('guessInput').value = '';
-        document.getElementById('wordGameMessage').textContent = '';
-        let timeLeft = 100;
-        document.getElementById('timerBar').style.width = '100%';
-        gameInterval = setInterval(() => {
-          timeLeft--;
-          document.getElementById('timerBar').style.width = `${timeLeft}%`;
-          if (timeLeft <= 0) {
-            clearInterval(gameInterval);
-            document.getElementById('wordGameMessage').textContent = `Time's up! The word was "${scrambleAnswer}".`;
-          }
-        }, 100);
-
-        document.getElementById('submitGuess').onclick = () => {
-          const guess = document.getElementById('guessInput').value.toLowerCase();
-          if (guess === scrambleAnswer) {
-            clearInterval(gameInterval);
-            document.getElementById('wordGameMessage').textContent = 'Correct!';
-            setTimeout(setupWordGame, 1000);
-          } else {
-            document.getElementById('wordGameMessage').textContent = 'Try again!';
-          }
-        };
-
-        document.getElementById('hintButton').onclick = () => {
-          if (hintsUsed < scrambleAnswer.length) {
-            let pos;
-            do { pos = Math.floor(Math.random() * scrambleAnswer.length); } while (revealed[pos]);
-            revealed[pos] = true;
-            hintsUsed++;
-            document.getElementById('wordGameMessage').textContent = `Hint: Position ${pos + 1} is '${scrambleAnswer[pos]}'`;
-          }
-        };
-      }
+    // Dark Mode Toggle
+    document.getElementById('toggleDarkMode').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
     });
+    if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark-mode');
+
+    // Calculation Functions
+    let affordabilityChart, increaseChart;
+
+    function calculateIncome() {
+      const rent = parseFloat(document.getElementById('rent').value);
+      const income = parseFloat(document.getElementById('income').value);
+      if (isNaN(rent) || isNaN(income) || rent <= 0) {
+        document.getElementById('affordabilityResult').textContent = 'Please enter valid numbers.';
+        return;
+      }
+      const tenantIncomeRequired = rent * 30;
+      const guarantorIncomeRequired = rent * 36;
+      document.getElementById('affordabilityResult').textContent = 
+        `Affordability: ${income >= tenantIncomeRequired ? 'Affordable' : 'Not Affordable'}`;
+
+      if (affordabilityChart) affordabilityChart.destroy();
+      affordabilityChart = new Chart(document.getElementById('affordabilityChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Tenant Required', 'Guarantor Required', 'Your Income'],
+          datasets: [{
+            label: 'Income (£)',
+            data: [tenantIncomeRequired, guarantorIncomeRequired, income],
+            backgroundColor: ['#004953', '#5c7f71', '#91301a']
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function calculateEnhanced() {
+      const income = parseFloat(document.getElementById('grossIncomeEnhanced').value);
+      const ehePercentage = parseFloat(document.getElementById('ehePercentageEnhanced').value);
+      if (isNaN(income) || isNaN(ehePercentage)) {
+        document.getElementById('enhancedResult').textContent = 'Please enter valid numbers.';
+        return;
+      }
+      const monthlyNet = (income * 0.75) / 12; // Simplified tax
+      const disposable = monthlyNet * (1 - ehePercentage / 100);
+      document.getElementById('enhancedResult').textContent = 
+        `Disposable Income: £${disposable.toFixed(2)} per month`;
+    }
+
+    function calculateIncrease() {
+      const currentRent = parseFloat(document.getElementById('currentRent').value);
+      const marketRent = parseFloat(document.getElementById('marketRent').value);
+      if (isNaN(currentRent) || isNaN(marketRent) || currentRent <= 0) {
+        document.getElementById('increaseResult').textContent = 'Please enter valid numbers.';
+        return;
+      }
+      const increasePercentage = Math.min(0.06, (marketRent - currentRent) / currentRent);
+      const newRent = currentRent * (1 + increasePercentage);
+      document.getElementById('increaseResult').textContent = 
+        `New Rent: £${newRent.toFixed(2)} (Increase: ${(increasePercentage * 100).toFixed(1)}%)`;
+
+      if (increaseChart) increaseChart.destroy();
+      increaseChart = new Chart(document.getElementById('increaseChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Current Rent', 'Market Rent', 'New Rent'],
+          datasets: [{
+            label: 'Rent (£)',
+            data: [currentRent, marketRent, newRent],
+            backgroundColor: ['#004953', '#5c7f71', '#91301a']
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function calculateUtilityBill() {
+      const householdSize = document.getElementById('householdSize').value;
+      const rates = { '1-2': 100, '2-3': 150, '4-5': 200 };
+      const cost = rates[householdSize] || 0;
+      document.getElementById('utilityResult').textContent = 
+        `Estimated Monthly Energy Cost: £${cost.toFixed(2)}`;
+    }
+
+    function updateCouncilTax() {
+      const band = document.getElementById('councilBand').value;
+      const rates = { 'A': 1200, 'D': 1800, 'H': 3600 };
+      document.getElementById('councilTaxResult').textContent = 
+        `Annual Council Tax: £${rates[band] || 0}`;
+    }
+
+    function calculateProRata() {
+      const rent = parseFloat(document.getElementById('monthlyProRataRent').value);
+      const start = new Date(document.getElementById('startDateProRata').value);
+      const end = new Date(document.getElementById('endDateProRata').value);
+      if (isNaN(rent) || !start || !end || end <= start) {
+        document.getElementById('proRataResult').textContent = 'Invalid inputs.';
+        return;
+      }
+      const days = (end - start) / (1000 * 60 * 60 * 24);
+      const dailyRent = rent / 30;
+      document.getElementById('proRataResult').textContent = 
+        `Pro-Rata Rent: £${(dailyRent * days).toFixed(2)}`;
+    }
   </script>
 </body>
 </html>
